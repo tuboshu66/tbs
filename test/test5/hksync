@@ -16,8 +16,8 @@ VNETC=`netstat -anput | grep client | wc -l`
 DA=`date "+%Y-%m-%d %H:%M:%S"`   #标准的时间输出
 #TG通知部分，定义TG_MESSAGE后调用
 function TG_BOT() {
-export TGSEND_TOKEN=""
-export TGSEND_CHATID=""
+export TGSEND_TOKEN="5688173096:AAFyqcmKdfa1TaaBMnXNRgs7DGCZYQz5iS8"
+export TGSEND_CHATID="1088857444"
 curl -s -k "https://thingproxy.freeboard.io/fetch/https://api.telegram.org/bot$TGSEND_TOKEN/sendMessage" \
     --data-urlencode "chat_id=$TGSEND_CHATID" \
     --data-urlencode "text=$TG_MESSAGE" \
