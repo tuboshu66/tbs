@@ -1,6 +1,6 @@
 #!/bin/bash
 #远端文件储存地址
-Github="https://ghproxy.net/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test6"
+Github="https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6"
 GostService="https://ghproxy.net/https://raw.githubusercontent.com/KANIKIG/Multi-EasyGost/master"
 cndownload="https://ghproxy.net/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test5"
 tcp2ws_download="https://ghproxy.net/https://github.com/zanjie1999/tcp-over-websocket/releases/download/3.5/tcp2ws-linux"
