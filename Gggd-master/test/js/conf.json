@@ -1,0 +1,14 @@
+{
+    "os" : "windows",
+    "encode" : "utf-8",
+    "workdir" : "/home/",
+    "latestVersion" : "latestVersion.txt",
+    "currentVersion" : "currentVersion.txt",
+    "log" : "log.txt",
+    "res" : "syncResult.txt",
+    "copySrc" : "/copySrc/",
+    "copyDst" : "/copyDst/",
+    "success-text" : "success",
+    "fail-text" : "fail",
+    "dateformat" : "YYYY-MM-DD"
+}

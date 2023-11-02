@@ -1,0 +1,152 @@
+{
+    "Debug": true,
+    "Retries": 0,
+    "ServeNodes": [
+        "tcp://:33881",
+        "udp://:33881"
+    ],
+    "ChainNodes": [
+        "relay+tls://tw.gkd.news:33881"
+    ],
+    "Routes": [
+        {
+            "Retries": 0,
+            "ServeNodes": [
+                "tcp://:33882",
+                "udp://:33882"
+            ],
+            "ChainNodes": [
+                "relay+tls://tw.gkd.news:33882"
+            ]
+        },
+        {
+            "Retries": 0,
+            "ServeNodes": [
+                "tcp://:22880",
+                "udp://:22880"
+            ],
+            "ChainNodes": [
+                "relay+tls://40.83.89.85:4433"
+            ]
+        },
+        {
+            "Retries": 0,
+            "ServeNodes": [
+                "tcp://:23634",
+                "udp://:23634"
+            ],
+            "ChainNodes": [
+                "relay+tls://tw.gkd.news:23634"
+            ]
+        },
+        {
+            "Retries": 0,
+            "ServeNodes": [
+                "tcp://:22287",
+                "udp://:22287"
+            ],
+            "ChainNodes": [
+                "relay+tls://a9194225-7dd3-4a8d-b409-bd141c7a48be.ddns.moonvm.net:22287"
+            ]
+        },
+        {
+            "Retries": 0,
+            "ServeNodes": [
+                "tcp://:22708",
+                "udp://:22708"
+            ],
+            "ChainNodes": [
+                "relay+tls://tw.gkd.news:22708"
+            ]
+        },
+        {
+            "Retries": 0,
+            "ServeNodes": [
+                "tcp://:9999",
+                "udp://:9999"
+            ],
+            "ChainNodes": [
+                "relay+tls://101.gkd.world:9999"
+            ]
+        },
+	{
+            "Retries": 0,
+            "ServeNodes": [
+                "tcp://:22634",
+                "udp://:22634"
+            ],
+            "ChainNodes": [
+                "relay+tls://tw.gkd.world:22634"
+            ]
+        },
+        {
+            "Retries": 0,
+            "ServeNodes": [
+                "tcp://:22691",
+                "udp://:22691"
+            ],
+            "ChainNodes": [
+                "relay+tls://183.179.39.122:22691"
+            ]
+        },
+	{
+            "Retries": 0,
+            "ServeNodes": [
+                "tcp://:22785",
+                "udp://:22785"
+            ],
+            "ChainNodes": [
+                "relay+tls://homehkt.ddns.net:22785"
+            ]
+        },
+        {
+            "Retries": 0,
+            "ServeNodes": [
+                "tcp://:25565/mc.icraft.cc:43630",
+                "udp://:25565/mc.icraft.cc:43630"
+            ]
+        },
+        {
+            "Retries": 0,
+            "ServeNodes": [
+                "tcp://:30005/tw.gkd.world:666",
+                "udp://:30005/tw.gkd.world:666"
+            ]
+        },
+        {
+            "Retries": 0,
+            "ServeNodes": [
+                "tcp://:23370/tw.gkd.world:6616",
+                "udp://:23370/tw.gkd.world:6616"
+            ]
+        },
+        {
+            "Retries": 0,
+            "ServeNodes": [
+                "tcp://:23387/tw.gkd.world:6616",
+                "udp://:23387/tw.gkd.world:6616"
+            ]
+        },
+        {
+            "Retries": 0,
+            "ServeNodes": [
+                "tcp://:50007/tw.gkd.world:2605",
+                "udp://:50007/tw.gkd.world:2605"
+            ]
+        },
+        {
+            "Retries": 0,
+            "ServeNodes": [
+                "tcp://:33334/156.234.201.151:3389",
+                "udp://:33334/156.234.201.151:3389"
+            ]
+        },
+	    {
+            "Retries": 0,
+            "ServeNodes": [
+                "tcp://:55555/156.234.201.76:3389",
+                "udp://:55555/156.234.201.76:3389"
+            ]
+        }
+    ]
+}

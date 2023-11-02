@@ -1,0 +1,20 @@
+#
+#
+#    vim /etc/sysctl.conf
+#    net.ipv4.ip_forward=0
+#    ???
+#    net.ipv4.ip_forward=1
+#??iptables????????????????ipatbles
+iptables -t nat -A PREROUTING -p tcp -m tcp --dport 10000:16600 -j DNAT --to-destination 10.46.115.173
+iptables -t nat -A PREROUTING -p udp -m udp --dport 10000:16600 -j DNAT --to-destination 10.46.115.173
+iptables -t nat -A POSTROUTING -d 10.46.115.173/32 -p tcp -m tcp --dport 10000:16600 -j SNAT --to-source 10.46.36.84
+iptables -t nat -A POSTROUTING -d 10.46.115.173/32 -p udp -m udp --dport 10000:16600 -j SNAT --to-source 10.46.36.84
+iptables -t nat -A PREROUTING -p tcp -m tcp --dport 16699:26600 -j DNAT --to-destination 10.46.115.173
+iptables -t nat -A PREROUTING -p udp -m udp --dport 16699:26600 -j DNAT --to-destination 10.46.115.173
+iptables -t nat -A POSTROUTING -d 10.46.115.173/32 -p tcp -m tcp --dport 16699:26600 -j SNAT --to-source 10.46.36.84
+iptables -t nat -A POSTROUTING -d 10.46.115.173/32 -p udp -m udp --dport 16699:26600 -j SNAT --to-source 10.46.36.84
+iptables -t nat -A PREROUTING -p tcp -m tcp --dport 26699:30000 -j DNAT --to-destination 10.46.115.173
+iptables -t nat -A PREROUTING -p udp -m udp --dport 26699:30000 -j DNAT --to-destination 10.46.115.173
+iptables -t nat -A POSTROUTING -d 10.46.115.173/32 -p tcp -m tcp --dport 26699:30000 -j SNAT --to-source 10.46.36.84
+iptables -t nat -A POSTROUTING -d 10.46.115.173/32 -p udp -m udp --dport 26699:30000 -j SNAT --to-source 10.46.36.84
+service iptables save

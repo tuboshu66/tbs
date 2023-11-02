@@ -1,0 +1,14 @@
+[Unit]
+Description=V2Board queue service
+
+[Service]
+ExecStart=/bin/php /www/wwwroot/v2b/artisan horizon
+Restart=always
+StartLimitBurst=0
+LimitNOFILE=infinity
+LimitNPROC=infinity
+LimitCORE=infinity
+User=www
+
+[Install]
+WantedBy=multi-user.target
