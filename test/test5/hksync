@@ -192,11 +192,11 @@ fi
 }
 function crontab_tbs(){
 #文件定义位置
-tbsnginx_Conf="/usr/local/nginx/tbsdl.conf"
+tbsnginx_Conf="/usr/local/nginx/tbsazdl.conf"
 if [[ $github_test == "success" ]] && [[ $github_cron == "true" ]]; then
 	#tbsnginx监控
 	rm -rf $tbsnginx_Conf.new
-	wget $Github/tbs/tbsdl.conf -O $tbsnginx_Conf.new
+	wget $Github/tbs/tbsazdl.conf -O $tbsnginx_Conf.new
 	tbsnginx_md5=`md5sum $tbsnginx_Conf  | cut -d ' ' -f1`
 	tbsnginx_md5_n=`md5sum $tbsnginx_Conf.new  | cut -d ' ' -f1`	
 	#检查与远端是否相符
