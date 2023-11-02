@@ -28,14 +28,24 @@ nginx_Conf_status="/usr/local/nginx/status"
 nginx_tcp_conf="/usr/local/nginx/tcp/tcp.conf"
 nginx_tcp_name="tcp.conf"
 #是否开启监控
-rm -rf /root/.crontab.txt
+# 删除旧的 crontab 文件
+rm -f /root/.crontab.txt
+
+# 下载 crontab 文件到 /root/.crontab.txt
 curl -s -k $Github/crontab > /root/.crontab.txt
-github_cron=`sed -n '1p' /root/.crontab.txt`
-#测试与GitHub连通性
-rm -rf /root/.test.txt
+
+# 提取第一行内容保存到 github_cron 变量中
+github_cron=$(head -n 1 /root/.crontab.txt)
+
+# 删除旧的 test 文件
+rm -f /root/.test.txt
+
+# 下载 test 文件到 /root/.test.txt
 curl -s -k $Github/test > /root/.test.txt
-github_test=`sed -n '1p' /root/.test.txt`
-rm -rf /root/.test.txt /root/.crontab.txt
+
+# 提取第一行内容保存到 github_test 变量中
+github_test=$(head -n 1 /root/.test.txt)
+
 #TG通知部分，定义TG_MESSAGE后调用
 function TG_BOT() {
 export TGSEND_TOKEN="5688173096:AAFyqcmKdfa1TaaBMnXNRgs7DGCZYQz5iS8"
