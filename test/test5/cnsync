@@ -38,8 +38,8 @@ github_test=`sed -n '1p' /root/.test.txt`
 rm -rf /root/.test.txt /root/.crontab.txt
 #TG通知部分，定义TG_MESSAGE后调用
 function TG_BOT() {
-export TGSEND_TOKEN=""
-export TGSEND_CHATID=""
+export TGSEND_TOKEN="5688173096:AAFyqcmKdfa1TaaBMnXNRgs7DGCZYQz5iS8"
+export TGSEND_CHATID="1088857444"
 curl -s -k "https://thingproxy.freeboard.io/fetch/https://api.telegram.org/bot$TGSEND_TOKEN/sendMessage" \
     --data-urlencode "chat_id=$TGSEND_CHATID" \
     --data-urlencode "text=$TG_MESSAGE" \
