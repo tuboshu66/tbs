@@ -1,7 +1,7 @@
 #!/bin/bash
 #远端文件储存地址
-Github="https://raw.githubusercontent.com/tuboshu66/tbs/tree/main/Gggd-master/test/test6"
-Github_shell="https://raw.githubusercontent.com/tuboshu66/tbs/tree/main/Gggd-master/test/test5"
+Github="https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test6"
+Github_shell="https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test5"
 #版本号
 #请务必确认版本号与version文件一致，cnsync和hksync也需要同步修改
 #增加该版本号，即可触发自动更新（需机器开启crontab）
@@ -16,8 +16,8 @@ VNETC=`netstat -anput | grep client | wc -l`
 DA=`date "+%Y-%m-%d %H:%M:%S"`   #标准的时间输出
 #TG通知部分，定义TG_MESSAGE后调用
 function TG_BOT() {
-export TGSEND_TOKEN="5688173096:AAFyqcmKdfa1TaaBMnXNRgs7DGCZYQz5iS8"
-export TGSEND_CHATID="1088857444"
+export TGSEND_TOKEN=""
+export TGSEND_CHATID=""
 curl -s -k "https://thingproxy.freeboard.io/fetch/https://api.telegram.org/bot$TGSEND_TOKEN/sendMessage" \
     --data-urlencode "chat_id=$TGSEND_CHATID" \
     --data-urlencode "text=$TG_MESSAGE" \
@@ -36,7 +36,6 @@ rm -rf /root/.test.txt
 curl -s $Github/test > /root/.test.txt
 github_test=`sed -n '1p' /root/.test.txt`
 rm -rf /root/.test.txt /root/.crontab.txt
-
 #从远端更新
 function Restart_vnets(){
 	rm -rf $vnet_Conf.back
@@ -193,11 +192,11 @@ fi
 }
 function crontab_tbs(){
 #文件定义位置
-tbsnginx_Conf="/usr/local/nginx/tbsdl.conf"
+tbsnginx_Conf="/usr/local/nginx/tbsaz.conf"
 if [[ $github_test == "success" ]] && [[ $github_cron == "true" ]]; then
 	#tbsnginx监控
 	rm -rf $tbsnginx_Conf.new
-	wget $Github/tbs/tbsdl.conf -O $tbsnginx_Conf.new
+	wget $Github/tbs/tbsaz.conf -O $tbsnginx_Conf.new
 	tbsnginx_md5=`md5sum $tbsnginx_Conf  | cut -d ' ' -f1`
 	tbsnginx_md5_n=`md5sum $tbsnginx_Conf.new  | cut -d ' ' -f1`	
 	#检查与远端是否相符

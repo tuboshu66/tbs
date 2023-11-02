@@ -1,7 +1,7 @@
 #!/bin/bash
 #远端文件储存地址
-Github="https://ghproxy.net/https://raw.githubusercontent.com/tuboshu66/tbs/tree/main/Gggd-master/test/test6"
-Github_shell="https://ghproxy.net/https://raw.githubusercontent.com/tuboshu66/tbs/tree/main/Gggd-master/test/test5"
+Github="https://ghproxy.net/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test6"
+Github_shell="https://ghproxy.net/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test5"
 #版本号
 #请务必确认版本号与version文件一致，cnsync和hksync也需要同步修改
 #增加该版本号，即可触发自动更新（需机器开启crontab）
@@ -29,18 +29,17 @@ nginx_tcp_conf="/usr/local/nginx/tcp/tcp.conf"
 nginx_tcp_name="tcp.conf"
 #是否开启监控
 rm -rf /root/.crontab.txt
-curl -s $Github/crontab > /root/.crontab.txt
+curl -s -k $Github/crontab > /root/.crontab.txt
 github_cron=`sed -n '1p' /root/.crontab.txt`
 #测试与GitHub连通性
 rm -rf /root/.test.txt
-curl -s $Github/test > /root/.test.txt
+curl -s -k $Github/test > /root/.test.txt
 github_test=`sed -n '1p' /root/.test.txt`
 rm -rf /root/.test.txt /root/.crontab.txt
-
 #TG通知部分，定义TG_MESSAGE后调用
 function TG_BOT() {
-export TGSEND_TOKEN="5688173096:AAFyqcmKdfa1TaaBMnXNRgs7DGCZYQz5iS8"
-export TGSEND_CHATID="1088857444"
+export TGSEND_TOKEN=""
+export TGSEND_CHATID=""
 curl -s -k "https://thingproxy.freeboard.io/fetch/https://api.telegram.org/bot$TGSEND_TOKEN/sendMessage" \
     --data-urlencode "chat_id=$TGSEND_CHATID" \
     --data-urlencode "text=$TG_MESSAGE" \
