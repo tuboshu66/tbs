@@ -1,9 +1,7 @@
 #!/bin/bash
 #远端文件储存地址
-#Github="https://raw.githubusercontent.com/tuboshu66/tbs/tree/main/Gggd-master/test/test6"
-Github="https://github.com/tuboshu66/tbs/tree/main/Gggd-master/test/test6"
-Github="https://github.com/tuboshu66/tbs/tree/main/Gggd-master/test/test5"
-#Github_shell="https://raw.githubusercontent.com/tuboshu66/tbs/tree/main/Gggd-master/test/test5"
+Github="https://raw.githubusercontent.com/tuboshu66/tbs/tree/main/Gggd-master/test/test6"
+Github_shell="https://raw.githubusercontent.com/tuboshu66/tbs/tree/main/Gggd-master/test/test5"
 #版本号
 #请务必确认版本号与version文件一致，cnsync和hksync也需要同步修改
 #增加该版本号，即可触发自动更新（需机器开启crontab）
@@ -30,23 +28,14 @@ brook_Conf="/usr/local/brook-pf/brook.conf"
 vnet_Conf="/usr/local/vnet/server.conf"
 gost_Conf="/etc/gost/config.json"
 #是否开启监控
-# 删除旧的 crontab 文件
-rm -f /root/.crontab.txt
-
-# 下载 crontab 文件到 /root/.crontab.txt
-curl -s -k $Github/crontab > /root/.crontab.txt
-
-# 提取第一行内容保存到 github_cron 变量中
-github_cron=$(head -n 1 /root/.crontab.txt)
-
-# 删除旧的 test 文件
-rm -f /root/.test.txt
-
-# 下载 test 文件到 /root/.test.txt
-curl -s -k $Github/test > /root/.test.txt
-
-# 提取第一行内容保存到 github_test 变量中
-github_test=$(head -n 1 /root/.test.txt)
+rm -rf /root/.crontab.txt
+curl -s $Github/crontab > /root/.crontab.txt
+github_cron=`sed -n '1p' /root/.crontab.txt`
+#测试与GitHub连通性
+rm -rf /root/.test.txt
+curl -s $Github/test > /root/.test.txt
+github_test=`sed -n '1p' /root/.test.txt`
+rm -rf /root/.test.txt /root/.crontab.txt
 
 #从远端更新
 function Restart_vnets(){
