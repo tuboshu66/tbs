@@ -1,8 +1,8 @@
 #cu
-set_real_ip_from   110.72.101.0/24; #广西-联通
-set_real_ip_from   61.133.1.0/24; #山东-联通
-set_real_ip_from   116.162.172.0/24; #长沙-联通
-set_real_ip_from   61.241.142.0/24; #安徽-联通
+set_real_ip_from   103.205.7..0/24; #江苏电信1000M共享
+set_real_ip_from   211.91.140.0/24; #武汉联通500M
+set_real_ip_from   120.241.65.0/24; #广州500M
+set_real_ip_from   120.241.65.0/24; #广州1000M
 #cm
 set_real_ip_from   39.175.168.0/24; #嘉兴-移动
 set_real_ip_from   112.28.229.0/24; #合肥-移动
