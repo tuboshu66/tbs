@@ -3,7 +3,7 @@
 Github="https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6"
 Github_shell="https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test5"
 #版本号
-#请务必确认版本号与version文件一致，cnsync和hksync也需要同步修改
+#请务必确认版本号与version文件一致，cndxsync和hksync也需要同步修改
 #增加该版本号，即可触发自动更新（需机器开启crontab）
 #1.0.3增加了nginx_ws/status每日检测更新
 #1.0.5只是测试推送更新是否可行
@@ -97,38 +97,38 @@ function crontab_add(){
 	mkdir /usr/local/cron
 	echo "#!/bin/bash
 #
-cnsync status
-cnsync cron
+cndxsync status
+cndxsync cron
 /bin/bash /root/brook-pf-mod.sh monitor
-#cnsync gkd
-#cnsync yp
-#cnsync tcp
-cnsync fq
-cnsync tbs">/usr/local/cron/cnsync_cron
+#cndxsync gkd
+#cndxsync yp
+#cndxsync tcp
+cndxsync fq
+cndxsync tbs">/usr/local/cron/cndxsync_cron
 	#查看是否已经存在监控
-	cron_config=$(crontab -l | grep "cnsync_cron")
-	cron_config2=$(crontab -l | grep "cnsync update")
+	cron_config=$(crontab -l | grep "cndxsync_cron")
+	cron_config2=$(crontab -l | grep "cndxsync update")
 	#检查并添加自动同步
     if [[ -z ${cron_config} ]]; then
 		rm -r "/root/crontab.bak"
 		crontab -l > "/root/crontab.bak"
-		echo -e "\n*/2 * * * * bash /usr/local/cron/cnsync_cron" >> "/root/crontab.bak"
+		echo -e "\n*/2 * * * * bash /usr/local/cron/cndxsync_cron" >> "/root/crontab.bak"
 		crontab "/root/crontab.bak"
 		rm -r "/root/crontab.bak"
-        echo -e "${Info} 已添加cnsync自动同步!"        
+        echo -e "${Info} 已添加cndxsync自动同步!"        
     else
-		echo -e "${Error} cnsync自动同步已存在" 
+		echo -e "${Error} cndxsync自动同步已存在" 
     fi
-	#检查并添加cnsync每日检查更新
+	#检查并添加cndxsync每日检查更新
 	if [[ -z ${cron_config2} ]]; then
 		rm -r "/root/crontab.bak"
 		crontab -l > "/root/crontab.bak"
-		echo -e "\n0 4 * * *  cnsync update" >> "/root/crontab.bak"
+		echo -e "\n0 4 * * *  cndxsync update" >> "/root/crontab.bak"
 		crontab "/root/crontab.bak"
 		rm -r "/root/crontab.bak"
-        echo -e "${Info} 已添加cnsync自动更新!"        
+        echo -e "${Info} 已添加cndxsync自动更新!"        
     else
-		echo -e "${Error} cnsync自动更新已存在" 
+		echo -e "${Error} cndxsync自动更新已存在" 
     fi
 }
 function crontab_all(){
@@ -473,7 +473,7 @@ fi
 }
 #检测程序结束
 #增加nginx：ws/status更新
-function cnsync_update(){
+function cndxsync_update(){
 new_version=`curl -s -k $Github_shell/version`
 if [[ $github_test == "success" ]] && [[ $github_cron == "true" ]]; then	
     #检测nginx的ws/status更新
@@ -489,15 +489,15 @@ if [[ $github_test == "success" ]] && [[ $github_cron == "true" ]]; then
 	    echo -e "nginx_ws文件无需更新"
 		fi
 		rm -rf $nginx_Conf_ws.new
-	#检测cnsync更新
+	#检测cndxsync更新
 	if [[ $new_version > $shell_version ]];then
 	    echo -e "当前版本\033[32m $shell_version \033[0m,最新版本为\033[32m $new_version \033[0m"
-	    rm -rf /usr/bin/cnsync
-    	wget --no-check-certificate $Github_shell/cnsync -O /usr/bin/cnsync
-    	chmod +x /usr/bin/cnsync
+	    rm -rf /usr/bin/cndxsync
+    	wget --no-check-certificate $Github_shell/cndxsync -O /usr/bin/cndxsync
+    	chmod +x /usr/bin/cndxsync
 	    echo -e "更新完成,版本号\033[32m $new_version \033[0m"
 	    else
-	    echo -e "cnsync当前版本号为\033[32m $shell_version \033[0m,已是最新版本"
+	    echo -e "cndxsync当前版本号为\033[32m $shell_version \033[0m,已是最新版本"
     fi
 else
 echo -e "\033[31m 通信中断或已关闭同步，程序中止 \033[0m"
@@ -552,7 +552,7 @@ if [[ $action == "brook" ]]; then
   elif [[ $action == "v" ]]; then
 	echo -e $shell_version
   elif [[ $action == "update" ]]; then
-	cnsync_update
+	cndxsync_update
   elif [[ $action == "addcron" ]]; then
 	crontab_add
   fi
@@ -562,8 +562,8 @@ fi
 else
  	echo -e "通信：\033[32m $github_test \033[0m"
 	echo -e "同步：\033[32m $github_cron \033[0m"
-	echo -e "请输入\033[32m cnsync vnet|brook|gost|nginx|all|cron|cn80|gkd|fq\033[0m 来执行同步操作" 
-	echo -e "输入\033[32m cnsync update\033[0m 检测更新"
-	echo -e "输入\033[32m cnsync status\033[0m 增加NGINX/VNET/GOST探针，自动重启并发送TG通知"
-	echo -e "输入\033[32m cnsync addcron\033[0m 添加自动同步与自动更新"
+	echo -e "请输入\033[32m cndxsync vnet|brook|gost|nginx|all|cron|cn80|gkd|fq\033[0m 来执行同步操作" 
+	echo -e "输入\033[32m cndxsync update\033[0m 检测更新"
+	echo -e "输入\033[32m cndxsync status\033[0m 增加NGINX/VNET/GOST探针，自动重启并发送TG通知"
+	echo -e "输入\033[32m cndxsync addcron\033[0m 添加自动同步与自动更新"
 fi
