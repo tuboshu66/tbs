@@ -1,0 +1,569 @@
+#!/bin/bash
+#远端文件储存地址
+Github="https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6"
+Github_shell="https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test5"
+#版本号
+#请务必确认版本号与version文件一致，cnsync和hksync也需要同步修改
+#增加该版本号，即可触发自动更新（需机器开启crontab）
+#1.0.3增加了nginx_ws/status每日检测更新
+#1.0.5只是测试推送更新是否可行
+shell_version="1.0.5"
+#定义探针函数
+SERVER_NAME=`sed -n '1p' /root/.status_name`  #请在root目录下创建 .status_name文件并填入机器名称
+NGX=`netstat -anput | grep nginx | wc -l`
+GOST=`netstat -anput | grep gost | wc -l`
+VNETC=`netstat -anput | grep client | wc -l`
+DA=`date "+%Y-%m-%d %H:%M:%S"`   #标准的时间输出
+#brook/vnet/gost本地文件位置
+brook_Conf="/usr/local/brook-pf/brook.conf"
+vnet_Conf="/usr/local/vnet/client.conf"
+gost_Conf="/etc/gost/config.json"
+nginx_Conf="/usr/local/nginx/mjnginx.conf"
+cn80_Conf="/usr/local/nginx/cn80.conf"
+gkdnginx_Conf="/usr/local/nginx/gkdnginx.conf"
+gkdnginx_name="gkdnginx.conf"
+nginx_Conf_ws="/usr/local/nginx/ws"
+nginx_Conf_status="/usr/local/nginx/status"
+#nginx四层文件位置 
+nginx_tcp_conf="/usr/local/nginx/tcp/tcp.conf"
+nginx_tcp_name="tcp.conf"
+#是否开启监控
+rm -rf /root/.crontab.txt
+curl -s -k $Github/crontab > /root/.crontab.txt
+github_cron=`sed -n '1p' /root/.crontab.txt`
+#测试与GitHub连通性
+rm -rf /root/.test.txt
+curl -s -k $Github/test > /root/.test.txt
+github_test=`sed -n '1p' /root/.test.txt`
+rm -rf /root/.test.txt /root/.crontab.txt
+#TG通知部分，定义TG_MESSAGE后调用
+function TG_BOT() {
+export TGSEND_TOKEN="5688173096:AAFyqcmKdfa1TaaBMnXNRgs7DGCZYQz5iS8"
+export TGSEND_CHATID="1088857444"
+curl -s -k "https://thingproxy.freeboard.io/fetch/https://api.telegram.org/bot$TGSEND_TOKEN/sendMessage" \
+    --data-urlencode "chat_id=$TGSEND_CHATID" \
+    --data-urlencode "text=$TG_MESSAGE" \
+    > /dev/null &
+}
+#检查首尾行文件
+function nginx_check_start_end() {
+    if [[ $nginx_check_start == "#start" ]] && [[ $nginx_check_end == "#end" ]]; then
+    echo "文件检查首位行无异常，继续执行"
+    else
+	echo "无法验证文件首尾行，可能是下载出错，请人工检查"
+        TG_MESSAGE="错误：$SERVER_NAME nginx 于 $DA 无法验证文件首尾行，可能是下载出错，请人工检查"
+        TG_BOT
+	exit 6
+    fi
+}
+#从远端更新
+function Restart_brook(){
+	rm -rf $brook_Conf.back
+	cp $brook_Conf $brook_Conf.back
+	rm -rf $brook_Conf
+	wget --no-check-certificate $Github/brook.conf -O $brook_Conf
+    PID=$(ps -ef| grep "brook relays"| grep -v grep| grep -v ".sh"| grep -v "init.d"| grep -v "service"| awk '{print $2}')
+    [[ ! -z ${PID} ]] && /etc/init.d/brook-pf stop
+    /etc/init.d/brook-pf start > /dev/null 2>&1 
+}
+function Restart_vnetc(){
+	rm -rf $vnet_Conf.back
+	cp $vnet_Conf $vnet_Conf.back
+	rm -rf $vnet_Conf
+	wget --no-check-certificate $Github/client.conf -O $vnet_Conf
+	chmod +x $vnet_Conf
+	systemctl restart vnetc
+	systemctl status vnetc
+}
+function Restart_gost(){
+	rm -rf $gost_Conf.back
+	cp $gost_Conf $gost_Conf.back
+	rm -rf $gost_Conf
+	wget --no-check-certificate $Github/config.json -O $gost_Conf
+    systemctl restart gost
+	systemctl status gost
+}
+function Restart_nginx(){
+	rm -rf $nginx_Conf.back
+	cp $nginx_Conf $nginx_Conf.back
+	rm -rf $nginx_Conf
+	wget --no-check-certificate $Github/mjnginx.conf -O $nginx_Conf
+    systemctl restart nginx
+	systemctl status nginx
+	/etc/init.d/nginx restart
+}
+function crontab_add(){
+    #创建监控文件
+	mkdir /usr/local/cron
+	echo "#!/bin/bash
+#
+cnsync status
+cnsync cron
+/bin/bash /root/brook-pf-mod.sh monitor
+#cnsync gkd
+#cnsync yp
+#cnsync tcp
+cnsync fq
+cnsync tbs">/usr/local/cron/cnsync_cron
+	#查看是否已经存在监控
+	cron_config=$(crontab -l | grep "cnsync_cron")
+	cron_config2=$(crontab -l | grep "cnsync update")
+	#检查并添加自动同步
+    if [[ -z ${cron_config} ]]; then
+		rm -r "/root/crontab.bak"
+		crontab -l > "/root/crontab.bak"
+		echo -e "\n*/2 * * * * bash /usr/local/cron/cnsync_cron" >> "/root/crontab.bak"
+		crontab "/root/crontab.bak"
+		rm -r "/root/crontab.bak"
+        echo -e "${Info} 已添加cnsync自动同步!"        
+    else
+		echo -e "${Error} cnsync自动同步已存在" 
+    fi
+	#检查并添加cnsync每日检查更新
+	if [[ -z ${cron_config2} ]]; then
+		rm -r "/root/crontab.bak"
+		crontab -l > "/root/crontab.bak"
+		echo -e "\n0 4 * * *  cnsync update" >> "/root/crontab.bak"
+		crontab "/root/crontab.bak"
+		rm -r "/root/crontab.bak"
+        echo -e "${Info} 已添加cnsync自动更新!"        
+    else
+		echo -e "${Error} cnsync自动更新已存在" 
+    fi
+}
+function crontab_all(){
+if [[ $github_test == "success" ]] && [[ $github_cron == "true" ]]; then
+	#brook监控(暂不启用，需将brook中的动态域名清除，否则将重复同步)
+	#rm -rf $brook_Conf.new 
+	#wget --no-check-certificate $Github/brook.conf -O $brook_Conf.new
+	#brook_md5=`md5sum $brook_Conf  | cut -d ' ' -f1`
+	#brook_md5_n=`md5sum $brook_Conf.new  | cut -d ' ' -f1`
+	#注释结束(目前已经启用)
+	#vnet监控
+	#rm -rf $vnet_Conf.new
+	#wget --no-check-certificate $Github/client.conf -O $vnet_Conf.new
+	#vnet_md5=`md5sum $vnet_Conf  | cut -d ' ' -f1`
+	#vnet_md5_n=`md5sum $vnet_Conf.new  | cut -d ' ' -f1`
+	#gost监控
+	#rm -rf $gost_Conf.new
+	#wget --no-check-certificate $Github/config.json -O $gost_Conf.new
+	#gost_md5=`md5sum $gost_Conf  | cut -d ' ' -f1`
+	#gost_md5_n=`md5sum $gost_Conf.new  | cut -d ' ' -f1`	
+	#nginx监控
+	rm -rf $nginx_Conf.new
+	wget --no-check-certificate $Github/mjnginx.conf -O $nginx_Conf.new
+	####这里开始验证首尾行是否正常####
+    nginx_check_start=`cat $nginx_Conf.new| head -n 1`
+	nginx_check_end=`cat $nginx_Conf.new| tail -n 1`
+	nginx_check_start_end
+    ####结束首尾行验证####
+	#MD5
+	nginx_md5=`md5sum $nginx_Conf  | cut -d ' ' -f1`
+	nginx_md5_n=`md5sum $nginx_Conf.new  | cut -d ' ' -f1`	
+	#检查与远端是否相符
+	if [[ $nginx_md5 != $nginx_md5_n ]]; then
+		echo "Nginx与远端文件不符，正在同步"
+		rm -rf $nginx_Conf
+		mv $nginx_Conf.new $nginx_Conf
+		systemctl reload nginx
+		echo -e "\033[32m Nginx文件已更新，同步完成 \033[0m"
+        TG_MESSAGE="$SERVER_NAME Nginx 于 $DA 自动同步配置文件"
+        TG_BOT
+#	elif [[ $vnet_md5 != $vnet_md5_n ]]; then
+#		echo "vnet与远端文件不符，正在同步"
+#		rm -rf $vnet_Conf
+#		mv $vnet_Conf.new $vnet_Conf
+#		chmod +x $vnet_Conf
+#		systemctl restart vnetc
+#		echo -e "\033[32m vnet文件已更新，同步完成 \033[0m"
+#        TG_MESSAGE="$SERVER_NAME vnet 于 $DA 自动同步配置文件"
+#        TG_BOT
+#	elif [[ $gost_md5 != $gost_md5_n ]]; then
+#		echo "gost与远端文件不符，正在同步"
+#		rm -rf $gost_Conf
+#		mv $gost_Conf.new $gost_Conf
+#		systemctl restart gost
+#		echo -e "\033[32m gost文件已更新，同步完成 \033[0m"
+#       TG_MESSAGE="$SERVER_NAME gost 于 $DA 自动同步配置文件"
+#        TG_BOT
+#	elif [[ $brook_md5 != $brook_md5_n ]]; then
+#		echo "brook与远端文件不符，正在同步"
+#		rm -rf $brook_Conf
+#		mv $brook_Conf.new $brook_Conf
+#		PID=$(ps -ef| grep "brook relays"| grep -v grep| grep -v ".sh"| grep -v "init.d"| grep -v "service"| awk '{print $2}')
+#		[[ ! -z ${PID} ]] && /etc/init.d/brook-pf stop
+#		/etc/init.d/brook-pf start > /dev/null 2>&1 
+#		echo -e "\033[32m brook文件已更新，同步完成 \033[0m"
+#        TG_MESSAGE="$SERVER_NAME brook 于 $DA 自动同步配置文件"
+#        TG_BOT
+	else
+		echo "所有文件与远端相符，无需同步"
+	fi
+else
+	echo "通信中断或已关闭同步，请手动操作"
+fi
+}
+function crontab_gkd(){
+if [[ $github_test == "success" ]] && [[ $github_cron == "true" ]]; then
+	#gkdnginx监控
+	rm -rf $gkdnginx_Conf.new
+	wget --no-check-certificate $Github/$gkdnginx_name -O $gkdnginx_Conf.new
+	gkdnginx_md5=`md5sum $gkdnginx_Conf  | cut -d ' ' -f1`
+	gkdnginx_md5_n=`md5sum $gkdnginx_Conf.new  | cut -d ' ' -f1`	
+	if [[ $gkdnginx_md5 != $gkdnginx_md5_n ]]; then
+		echo "GKD-Nginx与远端文件不符，正在同步"
+		rm -rf $gkdnginx_Conf
+		mv $gkdnginx_Conf.new $gkdnginx_Conf
+		systemctl reload nginx
+		echo -e "\033[32m Nginx文件已更新，同步完成 \033[0m"
+        TG_MESSAGE="$SERVER_NAME GKD-Nginx 于 $DA 自动同步配置文件"
+        TG_BOT
+	else
+		echo "所有文件与远端相符，无需同步"
+	fi
+else
+	echo "通信中断或已关闭同步，请手动操作"
+fi
+}
+function crontab_t2sgkd(){
+#首先定义文件位置
+tcp2ws_gkd_Conf="/usr/local/tcp2ws/config.conf"
+tcp2ws_gkd_Name="gkd-client"
+if [[ $github_test == "success" ]] && [[ $github_cron == "true" ]]; then
+	#tcp2ws-gkd监控
+	rm -rf $tcp2ws_gkd_Conf.new
+	wget --no-check-certificate $Github/tcp2ws/$tcp2ws_gkd_Name/config.conf -O $tcp2ws_gkd_Conf.new
+	tcp2ws_gkd_md5=`md5sum $tcp2ws_gkd_Conf  | cut -d ' ' -f1`
+	tcp2ws_gkd_md5_n=`md5sum $tcp2ws_gkd_Conf.new  | cut -d ' ' -f1`	
+	if [[ $tcp2ws_gkd_md5 != $tcp2ws_gkd_md5_n ]]; then
+		echo "tcp2ws-gkd与远端文件不符，正在同步"
+		rm -rf $tcp2ws_gkd_Conf
+		mv $tcp2ws_gkd_Conf.new $tcp2ws_gkd_Conf
+		chmod +x $tcp2ws_gkd_Conf
+		systemctl stop tcp2ws
+		systemctl start tcp2ws
+		echo -e "\033[32m tcp2ws-gkd文件已更新，同步完成 \033[0m"
+        TG_MESSAGE="$SERVER_NAME tcp2ws-gkd 于 $DA 自动同步配置文件"
+        TG_BOT
+	else
+		echo "所有文件与远端相符，无需同步"
+	fi
+else
+	echo "通信中断或已关闭同步，请手动操作"
+fi
+}
+function crontab_t2smj(){
+#首先定义文件位置
+tcp2ws_mj_Conf="/usr/local/tcp2ws/config.conf"
+tcp2ws_mj_Name="mj-client"
+if [[ $github_test == "success" ]] && [[ $github_cron == "true" ]]; then
+	#tcp2ws-mj监控
+	rm -rf $tcp2ws_mj_Conf.new
+	wget --no-check-certificate $Github/tcp2ws/$tcp2ws_mj_Name/config.conf -O $tcp2ws_mj_Conf.new
+	tcp2ws_mj_md5=`md5sum $tcp2ws_mj_Conf  | cut -d ' ' -f1`
+	tcp2ws_mj_md5_n=`md5sum $tcp2ws_mj_Conf.new  | cut -d ' ' -f1`	
+	if [[ $tcp2ws_mj_md5 != $tcp2ws_mj_md5_n ]]; then
+		echo "tcp2ws-mj与远端文件不符，正在同步"
+		rm -rf $tcp2ws_mj_Conf
+		mv $tcp2ws_mj_Conf.new $tcp2ws_mj_Conf
+		chmod +x $tcp2ws_mj_Conf
+		systemctl stop tcp2ws
+		systemctl start tcp2ws
+		echo -e "\033[32m tcp2ws-mj文件已更新，同步完成 \033[0m"
+        TG_MESSAGE="$SERVER_NAME tcp2ws-mj 于 $DA 自动同步配置文件"
+        TG_BOT
+	else
+		echo "所有文件与远端相符，无需同步"
+	fi
+else
+	echo "通信中断或已关闭同步，请手动操作"
+fi
+}
+function crontab_fq(){
+#首先定义该文件所在位置和远端文件名字
+fqnginx_Conf="/usr/local/nginx/fqnginx.conf"
+fqnginx_name="fqnginx.conf"
+if [[ $github_test == "success" ]] && [[ $github_cron == "true" ]]; then
+	#fqnginx监控
+	rm -rf $fqnginx_Conf.new
+	wget --no-check-certificate $Github/$fqnginx_name -O $fqnginx_Conf.new
+	####这里开始验证首尾行是否正常####
+    nginx_check_start=`cat $fqnginx_Conf.new| head -n 1`
+	nginx_check_end=`cat $fqnginx_Conf.new| tail -n 1`
+	nginx_check_start_end
+    ####结束首尾行验证####
+	fqnginx_md5=`md5sum $fqnginx_Conf  | cut -d ' ' -f1`
+	fqnginx_md5_n=`md5sum $fqnginx_Conf.new  | cut -d ' ' -f1`	
+	if [[ $fqnginx_md5 != $fqnginx_md5_n ]]; then
+		echo "FQ-Nginx与远端文件不符，正在同步"
+		rm -rf $fqnginx_Conf
+		mv $fqnginx_Conf.new $fqnginx_Conf
+		systemctl reload nginx
+		echo -e "\033[32m FQ-Nginx文件已更新，同步完成 \033[0m"
+        TG_MESSAGE="$SERVER_NAME FQ-Nginx 于 $DA 自动同步配置文件"
+        TG_BOT
+	else
+		echo "所有文件与远端相符，无需同步"
+	fi
+else
+	echo "通信中断或已关闭同步，请手动操作"
+fi
+}
+function crontab_yp(){
+#首先定义该文件所在位置和远端文件名字
+ypnginx_Conf="/usr/local/nginx/ypnginx.conf"
+ypnginx_name="ypnginx.conf"
+if [[ $github_test == "success" ]] && [[ $github_cron == "true" ]]; then
+	#fqnginx监控
+	rm -rf $ypnginx_Conf.new
+	wget --no-check-certificate $Github/$ypnginx_name -O $ypnginx_Conf.new
+	ypnginx_md5=`md5sum $ypnginx_Conf  | cut -d ' ' -f1`
+	ypnginx_md5_n=`md5sum $ypnginx_Conf.new  | cut -d ' ' -f1`	
+	if [[ $ypnginx_md5 != $ypnginx_md5_n ]]; then
+		echo "YP-Nginx与远端文件不符，正在同步"
+		rm -rf $ypnginx_Conf
+		mv $ypnginx_Conf.new $ypnginx_Conf
+		systemctl reload nginx
+		echo -e "\033[32m YP-Nginx文件已更新，同步完成 \033[0m"
+        TG_MESSAGE="$SERVER_NAME YP-Nginx 于 $DA 自动同步配置文件"
+        TG_BOT
+	else
+		echo "所有文件与远端相符，无需同步"
+	fi
+else
+	echo "通信中断或已关闭同步，请手动操作"
+fi
+}
+function crontab_tbs(){
+#首先定义该文件所在位置和远端文件名字
+tbsnginx_Conf="/usr/local/nginx/tbsDX.conf"
+tbsnginx_name="/tbs/tbsDX.conf"
+if [[ $github_test == "success" ]] && [[ $github_cron == "true" ]]; then
+	#fqnginx监控
+	rm -rf $tbsnginx_Conf.new
+	wget --no-check-certificate $Github/$tbsnginx_name -O $tbsnginx_Conf.new
+	####这里开始验证首尾行是否正常####
+    nginx_check_start=`cat $tbsnginx_Conf.new| head -n 1`
+	nginx_check_end=`cat $tbsnginx_Conf.new| tail -n 1`
+	nginx_check_start_end
+    ####结束首尾行验证####
+	tbsnginx_md5=`md5sum $tbsnginx_Conf  | cut -d ' ' -f1`
+	tbsnginx_md5_n=`md5sum $tbsnginx_Conf.new  | cut -d ' ' -f1`	
+	if [[ $tbsnginx_md5 != $tbsnginx_md5_n ]]; then
+		echo "TBS-Nginx与远端文件不符，正在同步"
+		rm -rf $tbsnginx_Conf
+		mv $tbsnginx_Conf.new $tbsnginx_Conf
+		systemctl reload nginx
+		echo -e "\033[32m TBS-Nginx文件已更新，同步完成 \033[0m"
+        TG_MESSAGE="$SERVER_NAME TBS-Nginx 于 $DA 自动同步配置文件"
+        TG_BOT
+	else
+		echo "所有文件与远端相符，无需同步"
+	fi
+else
+	echo "通信中断或已关闭同步，请手动操作"
+fi
+}
+function crontab_tcp(){
+    #nginx四层同步
+if [[ $github_test == "success" ]] && [[ $github_cron == "true" ]]; then
+    rm -rf $nginx_tcp_conf.new
+    wget --no-check-certificate $Github/$nginx_tcp_name -O $nginx_tcp_conf.new
+	nginx_tcp_md5=`md5sum $nginx_tcp_conf  | cut -d ' ' -f1`
+	nginx_tcp_md5_n=`md5sum $nginx_tcp_conf.new  | cut -d ' ' -f1`	
+	if [[ $nginx_tcp_md5 != $nginx_tcp_md5_n ]]; then
+		echo "Nginx四层协议与远端文件不符，正在同步"
+		rm -rf $nginx_tcp_conf
+		mv $nginx_tcp_conf.new $nginx_tcp_conf
+		systemctl reload nginx
+		echo -e "\033[32m Nginx文件已更新，同步完成 \033[0m"
+        TG_MESSAGE="$SERVER_NAME Nginx TCP 于 $DA 自动同步配置文件"
+        TG_BOT
+	else
+		echo "所有文件与远端相符，无需同步"
+	fi
+else
+	echo "通信中断或已关闭同步，请手动操作"
+fi
+}
+function crontab_cn80(){
+if [[ $github_test == "success" ]] && [[ $github_cron == "true" ]]; then
+	#cn80监控
+	rm -rf $cn80_Conf.new
+	wget --no-check-certificate $Github/cn80.conf -O $cn80_Conf.new
+	cn80_md5=`md5sum $cn80_Conf  | cut -d ' ' -f1`
+	cn80_md5_n=`md5sum $cn80_Conf.new  | cut -d ' ' -f1`
+	if [[ $cn80_md5 != $cn80_md5_n ]]; then
+		echo "cn80与远端文件不符，正在同步"
+		rm -rf $cn80_Conf
+		mv $cn80_Conf.new $cn80_Conf
+		systemctl reload nginx
+		echo -e "\033[32m Nginx_cn80文件已更新，同步完成 \033[0m"
+        TG_MESSAGE="$SERVER_NAME Nginx_cn80 于 $DA 自动同步配置文件"
+        TG_BOT
+	else
+		echo "所有文件与远端相符，无需同步"
+	fi
+else
+	echo "通信中断或已关闭同步，请手动操作"
+fi
+}
+#添加检测程序
+function nginx_status() {
+if [ "$NGX" -ne 0 ]		#$NGX这个变量的运行结果不等于0 非0代表正在运行
+   then	#那么
+     echo -en " Nginx is running！"	#就输出Nginx is running 信息；
+   else		#否则启动NGINX
+     echo "正在重启nginx"
+     systemctl restart nginx
+	 NGX_RESTART=`netstat -anput | grep nginx | wc -l`	 
+	if [ "$NGX_RESTART" -ne 0 ] ;then
+	TG_MESSAGE="检测到$SERVER_NAME Nginx 停止运行，已于 $DA 重启成功"
+	TG_BOT
+	elif [ "$NGX_RESTART" = 0 ] ;then
+	TG_MESSAGE="检测到$SERVER_NAME Nginx 停止运行，于 $DA 尝试重启但未成功，请进行人工检查"
+	TG_BOT
+	else
+	TG_MESSAGE="$SERVER_NAME Nginx!，于 $DA 尝试重启时出现未知错误，请进行人工检查"
+	TG_BOT	
+	fi	 
+fi
+}
+#gost废弃
+function gost_status() {
+if [ "$GOST" -ne 0 ]		#$GOST 这个变量的运行结果不等于0 非0代表正在运行
+   then	#那么
+     echo -en " GOST is running！"	#输出 GOST is running 信息；
+   else		#否则启动gost
+     echo "正在重启 gost"
+     systemctl restart gost
+	 sleep 0.5
+	 GOST_RESTART=`netstat -anput | grep gost | wc -l`	 
+	if [ "$GOST_RESTART" != 0 ] ;then
+	TG_MESSAGE="检测到$SERVER_NAME GOST 停止运行，已于 $DA 重启成功"
+	TG_BOT
+	elif [ "$GOST_RESTART" = 0 ] ;then
+	TG_MESSAGE="检测到$SERVER_NAME GOST 停止运行，于 $DA 尝试重启但未成功，请进行人工检查"
+	TG_BOT
+	else
+	TG_MESSAGE="$SERVER_NAME GOST!于 $DA 尝试重启时出现未知错误，请进行人工检查"
+	TG_BOT	
+	fi	 
+fi
+}
+function vnetc_status() {
+if [ "$VNETC" -ne 0 ]		#$VNETC 这个变量的运行结果不等于0 非0代表正在运行
+   then	#那么
+     echo -en " VNETC is running！"	#输出 VNETC is running 信息；
+   else		#否则启动 VNETC
+     echo "正在重启 VNETC"
+     systemctl restart vnetc
+	 VNETC_RESTART=`netstat -anput | grep client | wc -l`	 
+	if [ "$VNETC_RESTART" != 0 ] ;then
+	TG_MESSAGE="检测到$SERVER_NAME vnetc 停止运行，已于 $DA 重启成功"
+	TG_BOT
+	elif [ "$GOST_RESTART" = 0 ] ;then
+	TG_MESSAGE="检测到$SERVER_NAME vnetc 停止运行，于 $DA 尝试重启但未成功，请进行人工检查"
+	TG_BOT
+	else
+	TG_MESSAGE="$SERVER_NAME vnetc!于 $DA 尝试重启时出现未知错误，请进行人工检查"
+	TG_BOT	
+	fi	 
+fi
+}
+#检测程序结束
+#增加nginx：ws/status更新
+function cnsync_update(){
+new_version=`curl -s -k $Github_shell/version`
+if [[ $github_test == "success" ]] && [[ $github_cron == "true" ]]; then	
+    #检测nginx的ws/status更新
+	wget --no-check-certificate $Github_shell/download/ws -O $nginx_Conf_ws.new
+	nginx_ws_md5=`md5sum $nginx_Conf_ws  | cut -d ' ' -f1`
+	nginx_ws_md5_n=`md5sum $nginx_Conf_ws.new  | cut -d ' ' -f1`
+		if [[ $nginx_ws_md5 != $nginx_ws_md5_n ]]; then
+		echo "nginx_ws与远端文件不符，正在更新"
+		rm -rf $nginx_Conf_ws
+		mv $nginx_Conf_ws.new $nginx_Conf_ws
+		echo -e "\033[32m nginx_ws文件已更新 \033[0m"
+		else
+	    echo -e "nginx_ws文件无需更新"
+		fi
+		rm -rf $nginx_Conf_ws.new
+	#检测cnsync更新
+	if [[ $new_version > $shell_version ]];then
+	    echo -e "当前版本\033[32m $shell_version \033[0m,最新版本为\033[32m $new_version \033[0m"
+	    rm -rf /usr/bin/cnsync
+    	wget --no-check-certificate $Github_shell/cnsync -O /usr/bin/cnsync
+    	chmod +x /usr/bin/cnsync
+	    echo -e "更新完成,版本号\033[32m $new_version \033[0m"
+	    else
+	    echo -e "cnsync当前版本号为\033[32m $shell_version \033[0m,已是最新版本"
+    fi
+else
+echo -e "\033[31m 通信中断或已关闭同步，程序中止 \033[0m"
+fi
+}
+action=$1
+if [[ -n $action ]]; then
+#增加一个通信检测，如果与GitHub通信失败则停止脚本
+if [[ $github_test == "success" ]]; then
+if [[ $action == "brook" ]]; then
+    Restart_brook
+	echo -e "\033[32m brook文件已更新 \033[0m"
+  elif [[ $action == "vnet" ]]; then
+    Restart_vnetc
+    echo -e "\033[32m vnet文件已更新 \033[0m"
+  elif [[ $action == "gost" ]]; then
+    Restart_gost
+    echo -e "\033[32m gost文件已更新 \033[0m"
+  elif [[ $action == "nginx" ]]; then
+    Restart_nginx
+    echo -e "\033[32m nginx文件已更新 \033[0m"
+  elif [[ $action == "all" ]]; then
+    Restart_brook
+    Restart_vnetc
+    Restart_gost
+	Restart_nginx
+    echo -e "\033[32m brook/vnet/gost文件已更新 \033[0m"
+  elif [[ $action == "cron" ]]; then
+	crontab_all
+  elif [[ $action == "cn80" ]]; then
+	crontab_cn80
+  elif [[ $action == "gkd" ]]; then
+	crontab_gkd
+  elif [[ $action == "tcp" ]]; then
+	crontab_tcp
+  elif [[ $action == "fq" ]]; then
+	crontab_fq
+  elif [[ $action == "yp" ]]; then
+	crontab_yp
+  elif [[ $action == "tbs" ]]; then
+	crontab_tbs
+  elif [[ $action == "t2smj" ]]; then	
+	crontab_t2smj
+  elif [[ $action == "t2sgkd" ]]; then
+  crontab_t2sgkd
+  elif [[ $action == "status" ]]; then
+	nginx_status
+    #gost_status
+    #vnetc_status
+  elif [[ $action == "nginx_status" ]]; then
+    nginx_status
+  elif [[ $action == "v" ]]; then
+	echo -e $shell_version
+  elif [[ $action == "update" ]]; then
+	cnsync_update
+  elif [[ $action == "addcron" ]]; then
+	crontab_add
+  fi
+else
+	echo -e "\033[31m 远端通信失败，程序中止 \033[0m"
+fi
+else
+ 	echo -e "通信：\033[32m $github_test \033[0m"
+	echo -e "同步：\033[32m $github_cron \033[0m"
+	echo -e "请输入\033[32m cnsync vnet|brook|gost|nginx|all|cron|cn80|gkd|fq\033[0m 来执行同步操作" 
+	echo -e "输入\033[32m cnsync update\033[0m 检测更新"
+	echo -e "输入\033[32m cnsync status\033[0m 增加NGINX/VNET/GOST探针，自动重启并发送TG通知"
+	echo -e "输入\033[32m cnsync addcron\033[0m 添加自动同步与自动更新"
+fi
