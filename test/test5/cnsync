@@ -45,7 +45,7 @@ curl -s -k "https://thingproxy.freeboard.io/fetch/https://api.telegram.org/bot$T
     --data-urlencode "text=$TG_MESSAGE" \
     > /dev/null &
 }
-#检查首尾行文件
+#检查首尾行文件取消
 #function nginx_check_start_end() {
 #    if [[ $nginx_check_start == "#start" ]] && [[ $nginx_check_end == "#end" ]]; then
 #    echo "文件检查首位行无异常，继续执行"
