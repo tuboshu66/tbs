@@ -46,16 +46,16 @@ curl -s -k "https://thingproxy.freeboard.io/fetch/https://api.telegram.org/bot$T
     > /dev/null &
 }
 #检查首尾行文件
-function nginx_check_start_end() {
-    if [[ $nginx_check_start == "#start" ]] && [[ $nginx_check_end == "#end" ]]; then
-    echo "文件检查首位行无异常，继续执行"
-    else
-	echo "无法验证文件首尾行，可能是下载出错，请人工检查"
-        TG_MESSAGE="错误：$SERVER_NAME nginx 于 $DA 无法验证文件首尾行，可能是下载出错，请人工检查"
-        TG_BOT
-	exit 6
-    fi
-}
+#function nginx_check_start_end() {
+#    if [[ $nginx_check_start == "#start" ]] && [[ $nginx_check_end == "#end" ]]; then
+#    echo "文件检查首位行无异常，继续执行"
+#    else
+#	echo "无法验证文件首尾行，可能是下载出错，请人工检查"
+#        TG_MESSAGE="错误：$SERVER_NAME nginx 于 $DA 无法验证文件首尾行，可能是下载出错，请人工检查"
+#        TG_BOT
+#	exit 6
+#    fi
+#}
 #从远端更新
 function Restart_brook(){
 	rm -rf $brook_Conf.back
