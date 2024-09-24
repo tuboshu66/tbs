@@ -5,7 +5,7 @@ CF_API="https://api.cloudflare.com/client/v4/zones"
 ZONE_ID="eea63961734d3988f1365492d0d0f2ad"  # 你的 Cloudflare 域名 Zone ID 区域ID
 RECORD_ID="8a930419ce37918aa36c25fe8ee77742"  # 你要更新的 DNS 记录的 ID
 AUTH_EMAIL="qc3277734@gmail.com"  # 你的 Cloudflare 账户邮箱
-AUTH_KEY="fTdSRwO4O0v26qNME1t0j5H-H-dyBqQ9OY8Dzt51"  # 你的 Cloudflare API Token
+AUTH_KEY="3773452a14b1f9f0073ed467fa3c6efc79d9d"  # 你的 Cloudflare API Token
 DOMAIN="bymy.tfvou.com"  # 你想更新的域名或子域名
 IP=$(curl -s ifconfig.me)  # 获取当前公网 IP
 
