@@ -98,7 +98,7 @@ function crontab_mjhk_addcron(){
 hksync cron
 hksync tbs
 hksync mjt
-hksync tbsls
+hksync mjtls
 hksync dog
 hksync dogtls
 ">/usr/local/cron/mjhksync_cron
@@ -287,8 +287,8 @@ tcp_cron
 }
 function crontab_mjt_tls(){  #2022/10/20到期
 #定义文件名称和目录
-cert_pem="tbsls.pem"
-cert_key="tbsls.key"
+cert_pem="mjtls.pem"
+cert_key="mjtls.key"
 cert_path="/usr/local/nginx/cert"
 cert_cron
 }
@@ -363,7 +363,7 @@ if [[ $action == "vnet" ]]; then
 	crontab_tbs
   elif [[ $action == "mjt" ]]; then
 	crontab_mjt
-  elif [[ $action == "tbsls" ]]; then
+  elif [[ $action == "mjtls" ]]; then
     crontab_mjt_tls
   elif [[ $action == "dog" ]]; then
 	crontab_dog
