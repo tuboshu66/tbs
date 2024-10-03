@@ -13,9 +13,15 @@ sudo cp /etc/squid/squid.conf /etc/squid/squid.conf.bak
 local_ip=$(hostname -I | awk '{print $1}')
 network_prefix=$(echo $local_ip | awk -F '.' '{print $1"."$2"."$3".0/24"}')
 
+# 随机选择一个端口
+port=$((RANDOM % 65536))
+while [ $port -lt 1024 ]; do
+    port=$((RANDOM % 65536))
+done
+
 # 配置 Squid
 cat <<EOL | sudo tee /etc/squid/squid.conf
-http_port 3128
+http_port $port
 
 # 允许本地网段
 acl localnet src $network_prefix
@@ -36,7 +42,7 @@ sudo systemctl start squid
 sudo systemctl enable squid
 
 # 配置防火墙（如果使用 ufw）
-sudo ufw allow 3128/tcp
+sudo ufw allow $port/tcp
 
-echo "Squid HTTP 代理安装完成，监听端口为 3128"
+echo "Squid HTTP 代理安装完成，监听端口为 $port"
 echo "本地网络段为: $network_prefix"
