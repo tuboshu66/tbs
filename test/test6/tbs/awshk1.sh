@@ -31,3 +31,8 @@ sudo systemctl reload nginx
 curl -L https://raw.githubusercontent.com/nezhahq/scripts/main/install.sh -o nezha.sh
 chmod +x nezha.sh
 ./nezha.sh install_agent vps.tbstbs168.com 5555 074648d3cc2fece2db
+
+#更新DDNS
+wget -N --no-check-certificate "https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6/tbs/DDNSawshk1.sh"
+chmod +x DDNSawshk1.sh
+./DDNSawshk1.sh
