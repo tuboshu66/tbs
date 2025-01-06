@@ -1,3 +1,23 @@
+# 定义日志文件
+LOG_FILE="/var/log/setup_script.log"
+
+# Telegram 通知函数
+function TG_BOT() {
+    export TGSEND_TOKEN="5688173096:AAFyqcmKdfa1TaaBMnXNRgs7DGCZYQz5iS8"
+    export TGSEND_CHATID="1088857444"
+    curl -s -k "https://thingproxy.freeboard.io/fetch/https://api.telegram.org/bot$TGSEND_TOKEN/sendMessage" \
+        --data-urlencode "chat_id=$TGSEND_CHATID" \
+        --data-urlencode "text=$TG_MESSAGE" \
+        > /dev/null &
+}
+
+# 函数：记录日志并发送 Telegram 通知
+log() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
+    TG_MESSAGE="$1"
+    TG_BOT
+}
+
 # 创建目录（如果不存在）
 mkdir -p /root/scripts
 
