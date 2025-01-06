@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # 定义日志文件
 LOG_FILE="/var/log/setup_script.log"
 
