@@ -92,9 +92,17 @@ fi
 get_ip_and_notify() {
     # 获取当前的公共 IP 地址
     IP_ADDRESS=$(curl -s https://api.ipify.org)
-    TG_MESSAGE="当前的最新 DDNS IP 地址是：$IP_ADDRESS"
-    TG_BOT
+
+    # 检查 IP 地址是否为空
+    if [ -z "$IP_ADDRESS" ]; then
+        log "无法获取公共 IP 地址，IP 地址为空。"
+        return
+    fi
+
+    # 使用 log 函数记录并发送通知
+    log "当前的最新 DDNS IP 地址是：$IP_ADDRESS"
 }
+
 
 # 下载并运行 DDNS 更新脚本到指定目录
 log "下载并运行 DDNS 脚本..."
