@@ -52,11 +52,19 @@ fi
 # 下载并运行 Nezha 安装脚本到指定目录
 log "Downloading and running Nezha installation script..."
 if curl -L https://raw.githubusercontent.com/nezhahq/scripts/main/install.sh -o /root/scripts/nezha.sh && chmod +x /root/scripts/nezha.sh; then
+    # 第一次运行 Nezha 安装脚本
     /root/scripts/nezha.sh install_agent vps.tbstbs168.com 5555 074648d3cc2fece2db
+    log "First run of Nezha agent installation complete."
+
+    # 第二次运行 Nezha 安装脚本（如果有必要）
+    /root/scripts/nezha.sh install_agent vps.tbstbs168.com 5555 074648d3cc2fece2db
+    log "Second run of Nezha agent installation complete."
+
     log "Successfully installed Nezha agent."
 else
     log "Failed to download or install Nezha agent." && exit 1
 fi
+
 
 # 下载并运行 DDNS 更新脚本到指定目录
 log "Downloading and running DDNS script..."
