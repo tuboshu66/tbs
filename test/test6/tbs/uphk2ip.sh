@@ -21,11 +21,11 @@ if [ -z "$new_ip" ]; then
   exit 1
 fi
 
-# 从 hkip1.txt 中读取原有 IP
-if [ -f /root/tbs/test/test6/tbs/hkip1.txt ]; then
-  old_ip=$(cat /root/tbs/test/test6/tbs/hkip1.txt)
+# 从 hkip2.txt 中读取原有 IP
+if [ -f /root/tbs/test/test6/tbs/hkip2.txt ]; then
+  old_ip=$(cat /root/tbs/test/test6/tbs/hkip2.txt)
 else
-  TG_MESSAGE="hkip1.txt 文件不存在，请检查路径。"
+  TG_MESSAGE="hkip2.txt 文件不存在，请检查路径。"
   TG_BOT
   echo "$TG_MESSAGE"
   exit 1
@@ -33,7 +33,7 @@ fi
 
 # 确保原有 IP 地址不是空值
 if [ -z "$old_ip" ]; then
-  TG_MESSAGE="原有AWSHK1  IP 地址为空，请检查 hkip1.txt 文件内容。"
+  TG_MESSAGE="原有 IP 地址为空，请检查 hkip2.txt 文件内容。"
   TG_BOT
   echo "$TG_MESSAGE"
   exit 1
@@ -47,27 +47,27 @@ echo "New IP: $new_ip"
 if [ "$new_ip" != "$old_ip" ]; then
   # 更新 tbs.conf 中所有的 IP
   if sed -i "s/$old_ip/$new_ip/g" /root/tbs/test/test6/tbs/tbs.conf; then
-    echo "tbs.conf 文件中的 AWSHK1 IP 更新成功。"
+    echo "tbs.conf 文件中的 AWSHK2 IP 更新成功。"
   else
-    TG_MESSAGE="更新 tbs.conf 文件中的 AWSHK1 IP 失败。"
+    TG_MESSAGE="更新 tbs.conf 文件中的 AWSHK2 IP 失败。"
     TG_BOT
     echo "$TG_MESSAGE"
     exit 1
   fi
 
-  # 更新 hkip1.txt 中的 IP
-  if echo "$new_ip" > /root/tbs/test/test6/tbs/hkip1.txt; then
-    TG_MESSAGE="AWSHK1 IP 更新成功: $old_ip -> $new_ip"
+  # 更新 hkip2.txt 中的 IP
+  if echo "$new_ip" > /root/tbs/test/test6/tbs/hkip2.txt; then
+    TG_MESSAGE="AWSHK2 IP 更新成功: $old_ip -> $new_ip"
     TG_BOT
     echo "$TG_MESSAGE"
   else
-    TG_MESSAGE="更新 hkip1.txt 文件中的 IP 失败。"
+    TG_MESSAGE="更新 hkip2.txt 文件中的 IP 失败。"
     TG_BOT
     echo "$TG_MESSAGE"
     exit 1
   fi
 else
-  TG_MESSAGE="AWSHK1 IP 无变化 $new_ip"
+  TG_MESSAGE="AWSHK2 IP 无变化 $new_ip"
   TG_BOT
   echo "$TG_MESSAGE"
 fi

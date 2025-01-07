@@ -33,9 +33,9 @@ function TG_BOT() {
 # Cloudflare API 信息
 CF_API="https://api.cloudflare.com/client/v4/zones"
 ZONE_ID="eea63961734d3988f1365492d0d0f2ad"  # 你的 Cloudflare 域名 Zone ID
-RECORD_ID="addcd9a66bb10d13b6661c39502079ee"  # 你要更新的 DNS 记录的 ID
+RECORD_ID="c25bfe269595308a8e4e91323dfe1931"  # 你要更新的 DNS 记录的 ID
 AUTH_KEY="Ip9gxc9QqfPx-pgvn8uHXi_KjVGEUeYjXJITKhrM"  # 你的 API Token
-DOMAIN="awshk1.tfvou.com"  # 你想更新的域名或子域名
+DOMAIN="awshk2.tfvou.com"  # 你想更新的域名或子域名
 
 # 运行 jq 检查和安装
 check_and_install_jq
@@ -50,7 +50,7 @@ DNS_IP=$(curl -s -X GET "$CF_API/$ZONE_ID/dns_records/$RECORD_ID" \
 
 # 检查 IP 是否有变化
 if [ "$CURRENT_IP" == "$DNS_IP" ]; then
-  MESSAGE="AWSHK一 IP 无变化，当前 IP 为 $CURRENT_IP。无需更新。"
+  MESSAGE="AWSHK二 IP 无变化，当前 IP 为 $CURRENT_IP。无需更新。"
   echo $MESSAGE
   TG_BOT "$MESSAGE"
 else
@@ -67,11 +67,11 @@ else
 
   # 检查是否成功更新
   if [[ $RESPONSE == *"\"success\":true"* ]]; then
-      MESSAGE="AWSHK一 DNS 记录已成功更新为 $CURRENT_IP，TTL 为 $TTL 秒。"
+      MESSAGE="AWSHK二 DNS 记录已成功更新为 $CURRENT_IP，TTL 为 $TTL 秒。"
       echo $MESSAGE
       TG_BOT "$MESSAGE"
   else
-      MESSAGE="AWSHK一 DNS 记录更新失败。响应: $RESPONSE"
+      MESSAGE="AWSHK二 DNS 记录更新失败。响应: $RESPONSE"
       echo $MESSAGE
       TG_BOT "$MESSAGE"
   fi
