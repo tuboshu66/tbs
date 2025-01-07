@@ -47,7 +47,7 @@ echo "New IP: $new_ip"
 if [ "$new_ip" != "$old_ip" ]; then
   # 更新 tbs.conf 中所有的 IP
   if sed -i "s/$old_ip/$new_ip/g" /root/tbs/test/test6/tbs/tbs.conf; then
-    echo "tbs.conf 文件中的 AWSHK2 IP 更新成功。"
+    echo "tbs.conf 文件中的 AWSHK2 IP 更新成功。 $old_ip -> $new_ip"
   else
     TG_MESSAGE="更新 tbs.conf 文件中的 AWSHK2 IP 失败。"
     TG_BOT
@@ -57,7 +57,7 @@ if [ "$new_ip" != "$old_ip" ]; then
 
   # 更新 hkip2.txt 中的 IP
   if echo "$new_ip" > /root/tbs/test/test6/tbs/hkip2.txt; then
-    TG_MESSAGE="AWSHK2 IP 更新成功: $old_ip -> $new_ip"
+    TG_MESSAGE="AWSHK2 IP 更新成功: $old_ip -> $new_ip hkip2.txt"
     TG_BOT
     echo "$TG_MESSAGE"
   else
