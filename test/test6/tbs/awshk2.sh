@@ -79,10 +79,10 @@ if curl -L https://raw.githubusercontent.com/nezhahq/scripts/main/install.sh -o 
     log "第一次运行 Nezha 安装脚本完成。"
 
     # 第二次运行 Nezha 安装脚本（如果有必要）
-    /root/scripts/nezha.sh install_agent vps.tbstbs168.com 5555 206891f4dabaca3c96
-    log "第二次运行 Nezha 安装脚本完成。"
+    #/root/scripts/nezha.sh install_agent vps.tbstbs168.com 5555 206891f4dabaca3c96
+    #log "第二次运行 Nezha 安装脚本完成。"
 
-    log "成功安装 Nezha 代理。"
+    log "成功安装 Nezha 监控。"
 else
     log "下载或安装 Nezha 代理失败。" && exit 1
 fi
