@@ -4,57 +4,81 @@ Github="https://ghproxy.cyou/https://raw.githubusercontent.com/tuboshu66/tbs/mas
 
 # 定义变量
 SERVER_NAME=$(sed -n '1p' /root/.status_name) # 请在 root 目录下创建 .status_name 文件并填入机器名称
-DA=$(date "+%Y-%m-%d %H:%M:%S") # 标准的时间输出
-nginx_Conf="/usr/local/nginx/mjnginx.conf"
+DA=$(date "+%Y-%m-%d %H:%M:%S")       # 标准的时间输出
+tbsnginx_Conf="/usr/local/nginx/tbs.conf"
+tbsnginx_name="/tbs/tbs.conf"
 
 # 测试与 GitHub 连通性
 github_test=$(curl -s -k $Github/test)
 
 # TG 通知部分，定义 TG_MESSAGE 后调用
 function TG_BOT() {
-  export TGSEND_TOKEN="5688173096:AAFyqcmKdfa1TaaBMnXNRgs7DGCZYQz5iS8"
-  export TGSEND_CHATID="1088857444"
+  export TGSEND_TOKEN="5688173096:AAFyqcmKdfa1TaaBMnXNRgs7DGCZYQz5iS8" #请修改为你的TG Bot Token
+  export TGSEND_CHATID="1088857444" #请修改为你的TG Chat ID
   curl -s -k "https://thingproxy.freeboard.io/fetch/https://api.telegram.org/bot$TGSEND_TOKEN/sendMessage" \
     --data-urlencode "chat_id=$TGSEND_CHATID" \
     --data-urlencode "text=$TG_MESSAGE" \
     > /dev/null &
 }
 
-# 同步 mjnginx.conf
-function sync_mjnginx() {
+# 同步 tbs.conf
+function sync_tbs() {
   if [[ $github_test == "success" ]]; then
-    rm -rf $nginx_Conf.new
-    wget --no-check-certificate $Github/mjnginx.conf -O $nginx_Conf.new
-
-    nginx_md5=$(md5sum $nginx_Conf | cut -d ' ' -f1)
-    nginx_md5_n=$(md5sum $nginx_Conf.new | cut -d ' ' -f1)
-
-    if [[ $nginx_md5 != $nginx_md5_n ]]; then
-      echo "Nginx (mjnginx.conf) 与远端文件不符，正在同步"
-      rm -rf $nginx_Conf
-      mv $nginx_Conf.new $nginx_Conf
-      systemctl reload nginx
-      echo -e "\033[32m Nginx (mjnginx.conf) 文件已更新，同步完成 \033[0m"
-      TG_MESSAGE="$SERVER_NAME Nginx (mjnginx.conf) 于 $DA 自动同步配置文件"
-      TG_BOT
+    rm -rf "$tbsnginx_Conf.new"
+    wget --no-check-certificate "$Github/$tbsnginx_name" -O "$tbsnginx_Conf.new" 2>&1 > /dev/null # 静默下载，错误信息输出到标准错误
+    if [[ $? -eq 0 ]]; then # 检查 wget 命令的退出状态
+        tbsnginx_md5=$(md5sum "$tbsnginx_Conf" | cut -d ' ' -f1)
+        tbsnginx_md5_n=$(md5sum "$tbsnginx_Conf.new" | cut -d ' ' -f1)
+        if [[ "$tbsnginx_md5" != "$tbsnginx_md5_n" ]]; then
+            echo "TBS-Nginx (tbs.conf) 与远端文件不符，正在同步"
+            rm -rf "$tbsnginx_Conf"
+            mv "$tbsnginx_Conf.new" "$tbsnginx_Conf"
+            systemctl reload nginx
+            echo -e "\033[32m TBS-Nginx (tbs.conf) 文件已更新，同步完成 \033[0m"
+            TG_MESSAGE="$SERVER_NAME TBS-Nginx (tbs.conf) 于 $DA 自动同步配置文件"
+            TG_BOT
+        else
+            echo "TBS-Nginx (tbs.conf) 文件与远端相符，无需同步"
+        fi
     else
-      echo "Nginx (mjnginx.conf) 文件与远端相符，无需同步"
+      echo -e "\033[31m 下载 tbs.conf 失败！请检查网络或代理设置。\033[0m"
+      wget --no-check-certificate "$Github/$tbsnginx_name" -O "$tbsnginx_Conf.new" # 再次尝试下载并显示输出信息，方便排查
+      TG_MESSAGE="$SERVER_NAME 下载 tbs.conf 失败！于 $DA 请检查服务器网络连接和代理设置。"
+      TG_BOT
     fi
   else
     echo -e "\033[31m 与远端通信失败，同步中止 \033[0m"
+    TG_MESSAGE="$SERVER_NAME 与GitHub通信失败，TBS同步中止，请检查服务器网络连接。"
+    TG_BOT
+  fi
+}
+
+# 添加定时任务
+function add_cron() {
+  cron_config=$(crontab -l | grep "cnsync tbs")
+  if [[ -z ${cron_config} ]]; then
+    rm -rf "/root/crontab.bak"
+    crontab -l > "/root/crontab.bak"
+    echo -e "\n*/5 * * * * bash /path/to/cnsync tbs" >> "/root/crontab.bak" # 每 5 分钟执行一次
+    crontab "/root/crontab.bak"
+    rm -rf "/root/crontab.bak"
+    echo -e "\033[32m 已添加 tbs.conf 定时同步任务（每 5 分钟）\033[0m"
+  else
+    echo -e "\033[33m tbs.conf 定时同步任务已存在 \033[0m"
   fi
 }
 
 action=$1
 if [[ -n $action ]]; then
-  if [[ $github_test == "success" ]]; then
-    if [[ $action == "mjnginx" ]]; then
-      sync_mjnginx
-    fi
+  if [[ $action == "tbs" ]]; then
+    sync_tbs
+  elif [[ $action == "addcron" ]]; then
+    add_cron
   else
-    echo -e "\033[31m 远端通信失败，程序中止 \033[0m"
+    echo -e "\033[31m 未知操作：$action \033[0m"
   fi
 else
-  echo -e "通信：\033[32m $github_test \033[0m"
-  echo -e "请输入 \033[32m cnsync mjnginx \033[0m 来执行 mjnginx.conf 同步操作"
+  echo -e "请输入以下命令："
+  echo -e "  \033[32m cnsync tbs \033[0m 执行 tbs.conf 同步"
+  echo -e "  \033[32m cnsync addcron \033[0m 添加定时同步任务"
 fi
