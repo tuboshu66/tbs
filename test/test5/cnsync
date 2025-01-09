@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # 远端文件储存地址
 Github="https://ghproxy.cyou/https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6"
 Github_shell="https://ghproxy.cyou/https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test5"
@@ -34,7 +36,7 @@ function sync_tbs() {
         echo "TBS-Nginx (tbs.conf) 与远端文件不符，正在同步"
         rm -rf "$tbsnginx_Conf"
         mv "$tbsnginx_Conf.new" "$tbsnginx_Conf"
-        systemctl reload nginx
+        systemctl reload nginx  # 重启 Nginx
         echo -e "\033[32m TBS-Nginx (tbs.conf) 文件已更新，同步完成 \033[0m"
         TG_MESSAGE="$SERVER_NAME TBS-Nginx (tbs.conf) 于 $DA 自动同步配置文件"
         TG_BOT
@@ -66,6 +68,7 @@ function sync_ws() {
         echo "nginx_ws 与远端文件不符，正在更新"
         rm -rf "$nginx_Conf_ws"
         mv "$nginx_Conf_ws.new" "$nginx_Conf_ws"
+        systemctl reload nginx  # 重启 Nginx
         echo -e "\033[32m nginx_ws 文件已更新 \033[0m"
         TG_MESSAGE="$SERVER_NAME nginx_ws 于 $DA 已更新"
         TG_BOT
