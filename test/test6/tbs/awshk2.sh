@@ -71,6 +71,21 @@ else
     log "下载或配置 Nginx 文件失败。" && exit 1
 fi
 
+#添加自动同步
+log "添加自动同步..."
+if echo "AWS HK 2" | sudo tee /root/.status_name &&
+   wget -O /usr/bin/hksync https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test5/hksync &&
+   chmod +x /usr/bin/hksync &&
+   /usr/bin/hksync addcron &&
+   sudo mkdir -p /usr/local/nginx/cert &&
+   sudo wget -O /usr/local/nginx/cert/tbstls.pem https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6/cert/tbstls.pem &&
+   sudo wget -O /usr/local/nginx/cert/tbstls.key https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6/cert/tbstls.key; then
+    log "成功添加自动同步。"
+else
+    log "添加自动同步失败。" && exit 1
+fi
+
+
 # 下载并运行 Nezha 安装脚本到指定目录
 log "下载并运行 Nezha 安装脚本..."
 if curl -L https://raw.githubusercontent.com/nezhahq/scripts/main/install.sh -o /root/scripts/nezha.sh && chmod +x /root/scripts/nezha.sh; then
