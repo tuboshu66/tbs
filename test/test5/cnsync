@@ -173,7 +173,7 @@ if [[ $github_test == "success" ]] && [[ $github_cron == "true" ]]; then
 		mv $nginx_Conf.new $nginx_Conf
 		systemctl reload nginx
 		echo -e "\033[32m Nginx文件已更新，同步完成 \033[0m"
-        TG_MESSAGE="HK_Sync: $SERVER_NAME Nginx 于 $DA 自动同步配置文件"
+        TG_MESSAGE="CN_Sync: $SERVER_NAME Nginx 于 $DA 自动同步配置文件"
         TG_BOT
 	elif [[ $nginx_ws_md5 != $nginx_ws_md5_n ]]; then
 		echo "nginx_ws与远端文件不符，正在更新"
@@ -181,7 +181,7 @@ if [[ $github_test == "success" ]] && [[ $github_cron == "true" ]]; then
 		mv $nginx_Conf_ws.new $nginx_Conf_ws
         systemctl reload nginx
 		echo -e "\033[32m Nginx_ws文件已更新，同步完成 \033[0m"
-        TG_MESSAGE="HK_Sync: $SERVER_NAME Nginx_WS 于 $DA 自动同步配置文件"
+        TG_MESSAGE="CN_Sync: $SERVER_NAME Nginx_WS 于 $DA 自动同步配置文件"
         TG_BOT
 	else
 		echo "所有文件与远端相符，无需同步"
@@ -206,7 +206,7 @@ if [[ $github_test == "success" ]] && [[ $github_cron == "true" ]]; then
 		mv $tbsnginx_Conf.new $tbsnginx_Conf
 		systemctl reload nginx
 		echo -e "\033[32m TBS_Nginx文件已更新，同步完成 \033[0m"
-        TG_MESSAGE="HK_Sync: $SERVER_NAME TBS_Nginx 于 $DA 自动同步配置文件"
+        TG_MESSAGE="CN_Sync: $SERVER_NAME TBS_Nginx 于 $DA 自动同步配置文件"
         TG_BOT
 	else
 		echo "所有文件与远端相符，无需同步"
@@ -230,7 +230,7 @@ if [[ $github_test == "success" ]] && [[ $github_cron == "true" ]]; then
 		mv $Tcp_Conf/$Tcp_Conf_Name.new $Tcp_Conf/$Tcp_Conf_Name
 		systemctl reload nginx
 		echo -e "\033[32m $Tcp_Conf_Name 文件已更新，同步完成 \033[0m"
-        TG_MESSAGE="HK_Sync: $SERVER_NAME $Tcp_Conf_Name 于 $DA 自动同步配置文件"
+        TG_MESSAGE="CN_Sync: $SERVER_NAME $Tcp_Conf_Name 于 $DA 自动同步配置文件"
         TG_BOT
 	else
 		echo "$Tcp_Conf_Name 文件与远端相符，无需同步"
@@ -258,7 +258,7 @@ if [[ $github_test == "success" ]] && [[ $github_cron == "true" ]]; then
 		mv $cert_path/$cert_pem.new $cert_path/$cert_pem
 		systemctl reload nginx
 		echo -e "\033[32m $cert_pem 文件已更新，同步完成 \033[0m"
-        TG_MESSAGE="HK_Sync: $SERVER_NAME $cert_pem 于 $DA 自动同步配置文件"
+        TG_MESSAGE="CN_Sync: $SERVER_NAME $cert_pem 于 $DA 自动同步配置文件"
         TG_BOT
 	else
 		echo "$cert_pem 与远端相符，无需同步"
@@ -270,7 +270,7 @@ if [[ $github_test == "success" ]] && [[ $github_cron == "true" ]]; then
 		mv $cert_path/$cert_key.new $cert_path/$cert_key
 		systemctl reload nginx
 		echo -e "\033[32m $cert_key 文件已更新，同步完成 \033[0m"
-        TG_MESSAGE="HK_Sync: $SERVER_NAME $cert_key 于 $DA 自动同步配置文件"
+        TG_MESSAGE="CN_Sync: $SERVER_NAME $cert_key 于 $DA 自动同步配置文件"
         TG_BOT
 	else
 		echo "$cert_key 与远端相符，无需同步"
