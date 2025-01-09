@@ -48,13 +48,13 @@ else
     log "执行 node_install 脚本失败。" && exit 1
 fi
 
-# 下载并运行 tcp.sh 脚本，自动输入选项
+# 下载并运行 bbr 脚本，自动输入选项
 log "下载并运行 tcp.sh 脚本..."
 if wget -N -O /root/scripts/tcp.sh "https://ghproxy.cyou/https://raw.githubusercontent.com/xiaoyiya/Linux-NetSpeed/master/tcp.sh" && chmod +x /root/scripts/tcp.sh; then
     echo "4" | /root/scripts/tcp.sh
-    log "成功执行 tcp.sh 脚本。"
+    log "成功执行 bbr 脚本。"
 else
-    log "下载或执行 tcp.sh 脚本失败。" && exit 1
+    log "下载或执行 bbr 脚本失败。" && exit 1
 fi
 
 # 下载并配置 Nginx 所需文件到指定目录

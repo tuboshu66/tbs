@@ -48,6 +48,8 @@ if [ "$new_ip" != "$old_ip" ]; then
   # 更新 tbs.conf 中所有的 IP
   if sed -i "s/$old_ip/$new_ip/g" /root/tbs/test/test6/tbs/tbs.conf; then
     echo "tbs.conf 文件中的 AWSHK1 IP 更新成功。 $old_ip -> $new_ip"
+	TG_MESSAGE="tbs.conf 文件中的 AWSHK1 IP 更新成功。 $old_ip -> $new_ip"
+	TG_BOT
   else
     TG_MESSAGE="更新 tbs.conf 文件中的 AWSHK1 IP 失败。"
     TG_BOT
