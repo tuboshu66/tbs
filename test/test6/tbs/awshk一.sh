@@ -12,7 +12,7 @@ chmod +x /root/node_install
 echo "2" | /root/node_install cn
 
 # 下载并运行 tcp.sh 脚本，自动输入选项
-wget -N --no-check-certificate "https://ghproxy.net/https://raw.githubusercontent.com/xiaoyiya/Linux-NetSpeed/master/tcp.sh"
+wget -N --no-check-certificate "https://ghproxy.cyou/https://raw.githubusercontent.com/xiaoyiya/Linux-NetSpeed/master/tcp.sh"
 chmod +x tcp.sh
 echo "4" | ./tcp.sh
 
