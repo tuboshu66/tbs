@@ -156,7 +156,7 @@ if [[ $github_test == "success" ]] && [[ $github_cron == "true" ]]; then
 	nginx_md5_n=`md5sum $nginx_Conf.new  | cut -d ' ' -f1`	
     #检测nginx的ws更新
     rm -rf $nginx_Conf_ws.new
-	wget $Github_shell/download/ws_hk -O $nginx_Conf_ws.new
+	wget $Github_shell/download/ws -O $nginx_Conf_ws.new
 	nginx_ws_md5=`md5sum $nginx_Conf_ws  | cut -d ' ' -f1`
 	nginx_ws_md5_n=`md5sum $nginx_Conf_ws.new  | cut -d ' ' -f1`
 	#检查与远端是否相符
@@ -180,7 +180,7 @@ if [[ $github_test == "success" ]] && [[ $github_cron == "true" ]]; then
 		rm -rf $nginx_Conf_ws
 		mv $nginx_Conf_ws.new $nginx_Conf_ws
         systemctl reload nginx
-		echo -e "\033[32m Nginx_ws_hk文件已更新，同步完成 \033[0m"
+		echo -e "\033[32m Nginx_ws文件已更新，同步完成 \033[0m"
         TG_MESSAGE="HK_Sync: $SERVER_NAME Nginx_WS 于 $DA 自动同步配置文件"
         TG_BOT
 	else
