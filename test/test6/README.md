@@ -27,7 +27,7 @@
 
 **安装cnsync（一键同步Brook/VNET/GOST）**
 
-    rm -rf /usr/bin/cnsync ; wget --no-check-certificate https://ghproxy.net/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test5/cnsync -O /usr/bin/cnsync ; chmod +x /usr/bin/cnsync ; cnsync addcron
+    rm -rf /usr/bin/cnsync ; wget --no-check-certificate https://ghproxy.cyou/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test5/cnsync -O /usr/bin/cnsync ; chmod +x /usr/bin/cnsync ; cnsync addcron
 
 同步使用
 
@@ -35,7 +35,7 @@
 
 **安装haproxy（电信10000-40000端口转发）**
 
-    rm -rf /root/haproxy.sh  ; wget --no-check-certificate https://ghproxy.net/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test5/haproxy.sh -O /root/haproxy.sh ; chmod +x /root/haproxy.sh ; /root/haproxy.sh
+    rm -rf /root/haproxy.sh  ; wget --no-check-certificate https://ghproxy.cyou/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test5/haproxy.sh -O /root/haproxy.sh ; chmod +x /root/haproxy.sh ; /root/haproxy.sh
 	
 	同步使用 
 
@@ -47,19 +47,19 @@
 
 **国内机器安装（一键安装Nginx/VNET/GOST/Brook）**
 
-    yum -y install wget ; rm -rf /root/node_install ; wget --no-check-certificate https://ghproxy.net/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test5/node_install -O /root/node_install ; chmod +x /root/node_install ; /root/node_install cn
+    yum -y install wget ; rm -rf /root/node_install ; wget --no-check-certificate https://ghproxy.cyou/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test5/node_install -O /root/node_install ; chmod +x /root/node_install ; /root/node_install cn
 
 **补丁脚本（清理日志，关闭80/443，修复vnet搭配nginx故障）**
 
-    rm -rf /root/patch.sh ; wget --no-check-certificate https://ghproxy.net/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test5/patch.sh -O /root/patch.sh ; chmod +x /root/patch.sh ; /root/patch.sh
+    rm -rf /root/patch.sh ; wget --no-check-certificate https://ghproxy.cyou/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test5/patch.sh -O /root/patch.sh ; chmod +x /root/patch.sh ; /root/patch.sh
 
 **部分网站实现一键对接（基于XrayR）**
 
-    yum -y install wget ; rm -rf /root/node_install ; wget --no-check-certificate https://ghproxy.net/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test5/node_install -O /root/node_install ; chmod +x /root/node_install ; /root/node_install pengui
+    yum -y install wget ; rm -rf /root/node_install ; wget --no-check-certificate https://ghproxy.cyou/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test5/node_install -O /root/node_install ; chmod +x /root/node_install ; /root/node_install pengui
 
 **升级脚本** <span id="f2">注释2: [^](#a2)</span>改动cnsync之外的文件时，我们需要手动升级
 
-    rm -rf /root/update.sh ; wget --no-check-certificate https://ghproxy.net/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test5/update.sh -O /root/update.sh ; chmod +x /root/update.sh ; /root/update.sh
+    rm -rf /root/update.sh ; wget --no-check-certificate https://ghproxy.cyou/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test5/update.sh -O /root/update.sh ; chmod +x /root/update.sh ; /root/update.sh
 
 
 ## 测试NETFLIX播放

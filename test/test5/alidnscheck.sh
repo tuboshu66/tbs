@@ -92,7 +92,7 @@ function install(){
 	if [[ ! -d "$check_logs_file" ]];then
 		mkdir $check_logs_file
 	elif [[ ! -f "/usr/bin/aldns" ]];then
-		wget https://ghproxy.net/https://raw.githubusercontent.com/iscoconut/alidns-bash/master/aldns.sh -O /usr/bin/aldns
+		wget https://ghproxy.cyou/https://raw.githubusercontent.com/iscoconut/alidns-bash/master/aldns.sh -O /usr/bin/aldns
 		chmod +x /usr/bin/aldns
 		
 	fi

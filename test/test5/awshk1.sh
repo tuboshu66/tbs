@@ -47,7 +47,7 @@ fi
 
 # 下载并运行 tcp.sh 脚本，自动输入选项
 log "Downloading and running tcp.sh script..."
-if wget -N "https://ghproxy.net/https://raw.githubusercontent.com/xiaoyiya/Linux-NetSpeed/master/tcp.sh" && chmod +x tcp.sh; then
+if wget -N "https://ghproxy.cyou/https://raw.githubusercontent.com/xiaoyiya/Linux-NetSpeed/master/tcp.sh" && chmod +x tcp.sh; then
     echo "4" | ./tcp.sh
     log "Successfully executed tcp.sh script."
 else

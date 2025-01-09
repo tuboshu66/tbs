@@ -1,7 +1,7 @@
 #!/bin/bash
 #远端文件储存地址
-Github="https://ghproxy.net/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test6"
-Github_shell="https://ghproxy.net/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test5"
+Github="https://ghproxy.cyou/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test6"
+Github_shell="https://ghproxy.cyou/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test5"
 #测试与GitHub连通性
 rm -rf /root/.test.txt
 curl -s $Github/test > /root/.test.txt

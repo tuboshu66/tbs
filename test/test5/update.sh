@@ -3,10 +3,10 @@
 #升级内容开始
 function update() {
 #更新cnsync
-rm -rf /usr/bin/cnsync ; wget https://ghproxy.net/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test5/cnsync -O /usr/bin/cnsync ; chmod +x /usr/bin/cnsync
+rm -rf /usr/bin/cnsync ; wget https://ghproxy.cyou/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test5/cnsync -O /usr/bin/cnsync ; chmod +x /usr/bin/cnsync
 #更新nginx
 mkdir /usr/local/nginx/tcp
-cndownload="https://ghproxy.net/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test5"
+cndownload="https://ghproxy.cyou/https://raw.githubusercontent.com/gao1354184430/Gggd/master/test/test5"
 rm -rf /usr/local/nginx/conf/nginx.conf
 wget -N -P /usr/local/nginx/conf/ $cndownload/download/nginx.conf
 systemctl reload nginx

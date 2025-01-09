@@ -1,8 +1,8 @@
 #!/bin/bash
 #远端文件储存地址
-Github="https://ghproxy.net/https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6"
-GostService="https://ghproxy.net/https://raw.githubusercontent.com/KANIKIG/Multi-EasyGost/master"
-cndownload="https://ghproxy.net/https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test5"
+Github="https://ghproxy.cyou/https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6"
+GostService="https://ghproxy.cyou/https://raw.githubusercontent.com/KANIKIG/Multi-EasyGost/master"
+cndownload="https://ghproxy.cyou/https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test5"
 tcp2ws_download="https://github.com/zanjie1999/tcp-over-websocket/releases/download/3.5/tcp2ws-linux"
 #gost指定版本
 ct_new_ver="2.11.1"
@@ -199,7 +199,7 @@ function install_tengine() {
 		rm -rf /usr/local/nginx
         rm -rf /root/tengine*
 		cd /root
-		wget --no-check-certificate --no-check-certificate https://ghproxy.net/https://github.com/tuboshu66/tbs/blob/master/test/test6/tbs/tengine-2.3.3.tar.gz
+		wget --no-check-certificate --no-check-certificate https://ghproxy.cyou/https://github.com/tuboshu66/tbs/blob/master/test/test6/tbs/tengine-2.3.3.tar.gz
 		tar zxvf tengine-2.3.3.tar.gz
         cd /root/tengine-2.3.3/
 		./configure --with-http_realip_module --without-http_upstream_keepalive_module --with-stream --with-stream_ssl_module --with-stream_sni --add-module=modules/ngx_http_upstream_* --add-module=modules/ngx_debug_* --add-module=modules/ngx_http_slice_module --add-module=modules/ngx_http_user_agent_module --add-module=modules/ngx_http_reqstat_module --add-module=modules/ngx_http_proxy_connect_module --add-module=modules/ngx_http_footer_filter_module

@@ -1,7 +1,7 @@
 #!/bin/bash
 #远端文件储存地址
-Github="https://ghproxy.net/https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6"
-Github_shell="https://ghproxy.net/https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test5"
+Github="https://ghproxy.cyou/https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6"
+Github_shell="https://ghproxy.cyou/https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test5"
 #版本号
 #请务必确认版本号与version文件一致，cnltsync和hksync也需要同步修改
 #增加该版本号，即可触发自动更新（需机器开启crontab）
