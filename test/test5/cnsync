@@ -125,4 +125,4 @@ if [[ -n $action ]]; then
 else
   echo -e "请输入以下命令："
   echo -e "  \033[32m cnsync tbs \033[0m 执行 tbs.conf 同步"
-  echo -e "  \033[32m c
+  echo -e "
