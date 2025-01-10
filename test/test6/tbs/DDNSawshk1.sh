@@ -50,7 +50,7 @@ DNS_IP=$(curl -s -X GET "$CF_API/$ZONE_ID/dns_records/$RECORD_ID" \
 
 # 检查 IP 是否有变化
 if [ "$CURRENT_IP" == "$DNS_IP" ]; then
-  MESSAGE="AWSHK一 IP 无变化，当前 IP 为 $CURRENT_IP。无需更新。"
+  MESSAGE="DDNS检测：AWSHK一 IP 无变化，当前 IP 为 $CURRENT_IP。无需更新。"
   echo $MESSAGE
   TG_BOT "$MESSAGE"
 else

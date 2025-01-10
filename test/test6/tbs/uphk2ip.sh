@@ -69,7 +69,7 @@ if [ "$new_ip" != "$old_ip" ]; then
     exit 1
   fi
 else
-  TG_MESSAGE="AWSHK2 IP 无变化 $new_ip"
+  TG_MESSAGE="获取 awshk2.tfvou.com IP：AWSHK2 IP 无变化 $new_ip"
   TG_BOT
   echo "$TG_MESSAGE"
 fi
