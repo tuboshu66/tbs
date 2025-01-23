@@ -11,7 +11,7 @@ function TG_BOT() {
 }
 
 # 获取当前域名的IP
-new_ip=$(nslookup awshk1.tfvou.com | grep 'Address:' | tail -n 1 | awk '{print $2}')
+new_ip=$(nslookup awshk2.tfvou.com | grep 'Address:' | tail -n 1 | awk '{print $2}')
 
 # 确保获取到的 IP 地址不是空值
 if [ -z "$new_ip" ]; then
