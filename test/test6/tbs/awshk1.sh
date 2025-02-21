@@ -34,7 +34,10 @@ fi
 
 # 更新包管理器并安装 unzip
 log "更新包管理器并安装 unzip..."
-if sudo apt-get update && sudo apt-get install unzip -y; then
+# 设置非交互式前端，避免 debconf 弹出交互式提示
+export DEBIAN_FRONTEND=noninteractive
+
+if sudo apt-get update && sudo apt-get install -y unzip; then
     log "成功更新包管理器并安装 unzip。"
 else
     # 检查并处理所有可能的锁文件
@@ -64,11 +67,14 @@ else
         fi
     done
 
+    # 预设 debconf 配置，保持本地修改的配置文件
+    echo "openssh-server openssh-server/config-file-policy select keep" | sudo debconf-set-selections
+
     # 修复可能的中断状态并重试
     log "修复 dpkg 和 apt 状态并重试安装..."
     sudo dpkg --configure -a
     sudo apt-get install -f -y  # 修复依赖问题
-    if sudo apt-get update && sudo apt-get install unzip -y; then
+    if sudo apt-get update && sudo apt-get install -y unzip; then
         log "成功更新包管理器并安装 unzip。"
     else
         log "强制删除锁后仍无法更新或安装 unzip，请手动检查系统状态（可能仍有未清理的进程或依赖问题）。"
