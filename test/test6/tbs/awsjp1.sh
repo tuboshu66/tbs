@@ -19,16 +19,37 @@ log() {
     TG_MESSAGE="$1"
     TG_BOT
 }
-sudo apt-get update
-log "执行 pt-get update 更新包列表"
+
 # 创建目录（如果不存在）
 mkdir -p /root/scripts
+
 # 更新包管理器并安装 unzip
 log "更新包管理器并安装 unzip..."
-if sudo apt-get update && sudo apt-get install unzip -y; then
-    log "成功更新包管理器并安装 unzip。"
-else
-    log "更新包管理器或安装 unzip 失败。" && exit 1
+MAX_RETRIES=5
+RETRY_DELAY=10
+ATTEMPT=1
+
+# 检查并等待锁释放
+while [ $ATTEMPT -le $MAX_RETRIES ]; do
+    if sudo apt-get update && sudo apt-get install unzip -y; then
+        log "成功更新包管理器并安装 unzip。"
+        break
+    else
+        if [ -f /var/lib/dpkg/lock-frontend ]; then
+            log "检测到 dpkg 锁被占用 (尝试 $ATTEMPT/$MAX_RETRIES)，等待 $RETRY_DELAY 秒后重试..."
+            sleep $RETRY_DELAY
+            ATTEMPT=$((ATTEMPT + 1))
+        else
+            log "更新包管理器或安装 unzip 失败，且未检测到锁文件。"
+            exit 1
+        fi
+    fi
+done
+
+# 如果重试次数耗尽仍未成功
+if [ $ATTEMPT -gt $MAX_RETRIES ]; then
+    log "多次尝试后仍无法获取 dpkg 锁，可能是另一个进程占用。请检查并释放锁后重试。"
+    exit 1
 fi
 
 # 删除旧的 node_install 文件并下载新的到指定目录
@@ -87,7 +108,6 @@ else
     log "下载或安装 Nezha 代理失败。" && exit 1
 fi
 
-
 # 获取当前公共 IP 地址并发送到 Telegram
 get_ip_and_notify() {
     # 获取当前的公共 IP 地址
@@ -102,7 +122,6 @@ get_ip_and_notify() {
     # 使用 log 函数记录并发送通知
     log "当前的最新 DDNS IP 地址是：$IP_ADDRESS"
 }
-
 
 # 下载并运行 DDNS 更新脚本到指定目录
 log "下载并运行 DDNS 脚本..."
