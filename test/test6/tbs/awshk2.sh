@@ -19,7 +19,8 @@ log() {
     TG_MESSAGE="$1"
     TG_BOT
 }
-
+sudo apt-get update
+log "执行 pt-get update 更新包列表"
 # 创建目录（如果不存在）
 mkdir -p /root/scripts
 
