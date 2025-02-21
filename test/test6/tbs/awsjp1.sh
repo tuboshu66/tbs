@@ -23,33 +23,58 @@ log() {
 # 创建目录（如果不存在）
 mkdir -p /root/scripts
 
+# 检查并安装 lsof（用于检测占用锁的进程）
+log "检查并安装 lsof..."
+if ! command -v lsof >/dev/null 2>&1; then
+    if sudo apt-get update && sudo apt-get install -y lsof; then
+        log "成功安装 lsof。"
+    else
+        log "无法安装 lsof，将尝试继续执行，但可能无法正确检测占用锁的进程。"
+    fi
+fi
+
 # 更新包管理器并安装 unzip
 log "更新包管理器并安装 unzip..."
-MAX_RETRIES=5
-RETRY_DELAY=10
-ATTEMPT=1
+if sudo apt-get update && sudo apt-get install unzip -y; then
+    log "成功更新包管理器并安装 unzip。"
+else
+    # 检查并处理所有可能的锁文件
+    LOCK_FILES=("/var/lib/dpkg/lock-frontend" "/var/lib/dpkg/lock" "/var/cache/apt/archives/lock" "/var/cache/debconf/config.dat")
+    for LOCK_FILE in "${LOCK_FILES[@]}"; do
+        if [ -f "$LOCK_FILE" ]; then
+            # 检测占用锁的进程 ID
+            if command -v lsof >/dev/null 2>&1; then
+                LOCK_PID=$(sudo lsof "$LOCK_FILE" | awk '/apt|dpkg|debconf/{print $2}' | grep -v PID | sort -u)
+            else
+                LOCK_PID=$(ps aux | grep -E '[a]pt|[d]pkg|[d]ebconf' | awk '{print $2}' | sort -u)
+            fi
 
-# 检查并等待锁释放
-while [ $ATTEMPT -le $MAX_RETRIES ]; do
+            if [ -n "$LOCK_PID" ]; then
+                log "检测到 $LOCK_FILE 被进程 $LOCK_PID 占用，正在强制终止这些进程..."
+                for PID in $LOCK_PID; do
+                    sudo kill -9 "$PID"
+                done
+                sleep 2  # 等待进程完全终止
+            else
+                log "未找到占用 $LOCK_FILE 的进程，但锁文件存在。"
+            fi
+
+            # 删除锁文件
+            log "删除锁文件 $LOCK_FILE..."
+            sudo rm -f "$LOCK_FILE"
+        fi
+    done
+
+    # 修复可能的中断状态并重试
+    log "修复 dpkg 和 apt 状态并重试安装..."
+    sudo dpkg --configure -a
+    sudo apt-get install -f -y  # 修复依赖问题
     if sudo apt-get update && sudo apt-get install unzip -y; then
         log "成功更新包管理器并安装 unzip。"
-        break
     else
-        if [ -f /var/lib/dpkg/lock-frontend ]; then
-            log "检测到 dpkg 锁被占用 (尝试 $ATTEMPT/$MAX_RETRIES)，等待 $RETRY_DELAY 秒后重试..."
-            sleep $RETRY_DELAY
-            ATTEMPT=$((ATTEMPT + 1))
-        else
-            log "更新包管理器或安装 unzip 失败，且未检测到锁文件。"
-            exit 1
-        fi
+        log "强制删除锁后仍无法更新或安装 unzip，请手动检查系统状态（可能仍有未清理的进程或依赖问题）。"
+        exit 1
     fi
-done
-
-# 如果重试次数耗尽仍未成功
-if [ $ATTEMPT -gt $MAX_RETRIES ]; then
-    log "多次尝试后仍无法获取 dpkg 锁，可能是另一个进程占用。请检查并释放锁后重试。"
-    exit 1
 fi
 
 # 删除旧的 node_install 文件并下载新的到指定目录
