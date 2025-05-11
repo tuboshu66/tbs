@@ -1,8 +1,7 @@
 #!/bin/bash
 
-# 设置日志文件
+# 定义日志文件
 LOG_FILE="/var/log/setup_script.log"
-ERRORS=()
 
 # Telegram 通知函数
 function TG_BOT() {
@@ -14,105 +13,181 @@ function TG_BOT() {
         > /dev/null &
 }
 
-# 记录日志并发送 Telegram
+# 函数：记录日志并发送 Telegram 通知
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
     TG_MESSAGE="$1"
     TG_BOT
 }
 
-# 执行命令并处理错误
-run_step() {
-    STEP_DESC="$1"
-    shift
-    if "$@"; then
-        log "✅ $STEP_DESC 成功"
-    else
-        log "❌ $STEP_DESC 失败"
-        ERRORS+=("$STEP_DESC")
-    fi
-}
-
+# 创建目录（如果不存在）
 mkdir -p /root/scripts
 
-# 步骤 1：更新 apt 并安装 unzip
-run_step "更新包管理器并安装 unzip" bash -c '
-    while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
-        sleep 2
-    done
-    sudo apt-get update && sudo apt-get install unzip -y
-'
-
-# 步骤 2：下载并设置 node_install
-run_step "下载 node_install 文件" bash -c '
-    rm -rf /root/scripts/node_install
-    wget -O /root/scripts/node_install https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test5/node_install
-    chmod +x /root/scripts/node_install
-'
-
-# 步骤 3：执行 node_install 脚本
-run_step "执行 node_install 脚本" bash -c 'echo "2" | /root/scripts/node_install cn'
-
-# 步骤 4：下载并执行 BBR 脚本
-run_step "下载并执行 BBR 脚本" bash -c '
-    wget -N -O /root/scripts/tcp.sh "https://ghproxy.cyou/https://raw.githubusercontent.com/xiaoyiya/Linux-NetSpeed/master/tcp.sh"
-    chmod +x /root/scripts/tcp.sh
-    echo "4" | /root/scripts/tcp.sh
-'
-
-# 步骤 5：下载并配置 Nginx 所需文件
-run_step "配置 Nginx" bash -c '
-    sudo wget -O /usr/local/nginx/tbsazdl.conf https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6/tbs/tbsazdl.conf &&
-    sudo mkdir -p /usr/local/nginx/cert &&
-    sudo wget -O /usr/local/nginx/cert/tbstls.pem https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6/cert/tbstls.pem &&
-    sudo wget -O /usr/local/nginx/cert/tbstls.key https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6/cert/tbstls.key &&
-    sudo wget -O /usr/local/nginx/ws https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test5/download/ws_hk &&
-    sudo systemctl reload nginx
-'
-
-# 步骤 6：添加自动同步
-run_step "添加自动同步" bash -c '
-    echo "AWS HK 3" | sudo tee /root/.status_name &&
-    wget -O /usr/bin/hksync https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test5/hksync &&
-    chmod +x /usr/bin/hksync &&
-    /usr/bin/hksync addcron &&
-    sudo mkdir -p /usr/local/nginx/cert &&
-    sudo wget -O /usr/local/nginx/cert/tbstls.pem https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6/cert/tbstls.pem &&
-    sudo wget -O /usr/local/nginx/cert/tbstls.key https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6/cert/tbstls.key
-'
-
-# 步骤 7：安装 Nezha Agent
-run_step "安装 Nezha 监控代理" bash -c '
-    curl -L https://raw.githubusercontent.com/nezhahq/scripts/main/install.sh -o /root/scripts/nezha.sh &&
-    chmod +x /root/scripts/nezha.sh &&
-    /root/scripts/nezha.sh install_agent vps.tbstbs168.com 5555 85b9720cfd13a9b8fa
-'
-
-# 步骤 8：运行 DDNS 脚本
-run_step "执行 DDNS 脚本" bash -c '
-    wget -N -O /root/scripts/DDNSawshk3.sh https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6/tbs/DDNSawshk3.sh &&
-    chmod +x /root/scripts/DDNSawshk3.sh &&
-    /root/scripts/DDNSawshk3.sh &&
-    (crontab -l; echo "*/5 * * * * /root/scripts/DDNSawshk3.sh >> /var/log/ddns.log 2>&1") | crontab -
-'
-
-# 步骤 9：获取并报告 IP
-run_step "获取并上报公网 IP" bash -c '
-    IP_ADDRESS=$(curl -s https://api.ipify.org)
-    if [ -n "$IP_ADDRESS" ]; then
-        log "当前的最新 DDNS IP 地址是：$IP_ADDRESS"
+# 检查并安装 lsof（用于检测占用锁的进程）
+log "检查并安装 lsof..."
+if ! command -v lsof >/dev/null 2>&1; then
+    if sudo apt-get update && sudo apt-get install -y lsof; then
+        log "成功安装 lsof。"
     else
-        log "无法获取公共 IP 地址"
-        return 1
+        log "无法安装 lsof，将尝试继续执行，但可能无法正确检测占用锁的进程。"
     fi
-'
-
-# 总结结果
-if [ ${#ERRORS[@]} -ne 0 ]; then
-    log "⚠️ 脚本执行完成，但有以下步骤失败："
-    for err in "${ERRORS[@]}"; do
-        log "🔸 $err"
-    done
-else
-    log "🎉 所有任务全部成功完成。"
 fi
+
+# 更新包管理器并安装 unzip
+log "更新包管理器并安装 unzip..."
+# 设置非交互式前端，避免 debconf 弹出交互式提示
+export DEBIAN_FRONTEND=noninteractive
+
+if sudo apt-get update && sudo apt-get install -y unzip; then
+    log "成功更新包管理器并安装 unzip。"
+else
+    # 检查并处理所有可能的锁文件
+    LOCK_FILES=("/var/lib/dpkg/lock-frontend" "/var/lib/dpkg/lock" "/var/cache/apt/archives/lock" "/var/cache/debconf/config.dat")
+    for LOCK_FILE in "${LOCK_FILES[@]}"; do
+        if [ -f "$LOCK_FILE" ]; then
+            # 检测占用锁的进程 ID
+            if command -v lsof >/dev/null 2>&1; then
+                LOCK_PID=$(sudo lsof "$LOCK_FILE" | awk '/apt|dpkg|debconf/{print $2}' | grep -v PID | sort -u)
+            else
+                LOCK_PID=$(ps aux | grep -E '[a]pt|[d]pkg|[d]ebconf' | awk '{print $2}' | sort -u)
+            fi
+
+            if [ -n "$LOCK_PID" ]; then
+                log "检测到 $LOCK_FILE 被进程 $LOCK_PID 占用，正在强制终止这些进程..."
+                for PID in $LOCK_PID; do
+                    sudo kill -9 "$PID"
+                done
+                sleep 2  # 等待进程完全终止
+            else
+                log "未找到占用 $LOCK_FILE 的进程，但锁文件存在。"
+            fi
+
+            # 删除锁文件
+            log "删除锁文件 $LOCK_FILE..."
+            sudo rm -f "$LOCK_FILE"
+        fi
+    done
+
+    # 预设 debconf 配置，保持本地修改的配置文件
+    echo "openssh-server openssh-server/config-file-policy select keep" | sudo debconf-set-selections
+
+    # 修复可能的中断状态并重试
+    log "修复 dpkg 和 apt 状态并重试安装..."
+    sudo dpkg --configure -a
+    sudo apt-get install -f -y  # 修复依赖问题
+    if sudo apt-get update && sudo apt-get install -y unzip; then
+        log "成功更新包管理器并安装 unzip。"
+    else
+        log "强制删除锁后仍无法更新或安装 unzip，请手动检查系统状态（可能仍有未清理的进程或依赖问题）。"
+        exit 1
+    fi
+fi
+
+# 删除旧的 node_install 文件并下载新的到指定目录
+log "删除旧的 node_install 文件并下载新的..."
+if rm -rf /root/scripts/node_install && wget -O /root/scripts/node_install https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test5/node_install; then
+    chmod +x /root/scripts/node_install
+    log "成功下载并设置 node_install 文件权限。"
+else
+    log "下载 node_install 失败。" && exit 1
+fi
+
+# 执行 node_install 脚本并自动输入选项
+log "执行 node_install 脚本..."
+if echo "2" | /root/scripts/node_install cn; then
+    log "成功执行 node_install 脚本。"
+else
+    log "执行 node_install 脚本失败。" && exit 1
+fi
+
+# 下载并运行 bbr 脚本，自动输入选项
+log "下载并运行 BBR 脚本..."
+if wget -N -O /root/scripts/tcp.sh "https://ghproxy.cyou/https://raw.githubusercontent.com/xiaoyiya/Linux-NetSpeed/master/tcp.sh" && chmod +x /root/scripts/tcp.sh; then
+    echo "4" | /root/scripts/tcp.sh
+    log "成功执行 bbr 脚本。"
+else
+    log "下载或执行 bbr 脚本失败。" && exit 1
+fi
+
+# 下载并配置 Nginx 所需文件到指定目录
+log "下载并配置 Nginx 文件..."
+if sudo wget -O /usr/local/nginx/tbsazdl.conf https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6/tbs/tbsazdl.conf &&
+   #sudo wget -O /usr/local/nginx/tbs.conf https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6/tbs/tbs.conf &&
+   sudo mkdir -p /usr/local/nginx/cert &&
+   sudo wget -O /usr/local/nginx/cert/tbstls.pem https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6/cert/tbstls.pem &&
+   sudo wget -O /usr/local/nginx/cert/tbstls.key https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6/cert/tbstls.key &&
+   sudo wget -O /usr/local/nginx/ws https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test5/download/ws_hk; then
+    sudo systemctl reload nginx
+    log "成功配置 Nginx 并重新加载服务。"
+else
+    log "下载或配置 Nginx 文件失败。" && exit 1
+fi
+
+#添加自动同步
+log "添加自动同步..."
+if echo "AWS HK 3" | sudo tee /root/.status_name &&
+   wget -O /usr/bin/hksync https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test5/hksync &&
+   chmod +x /usr/bin/hksync &&
+   /usr/bin/hksync addcron &&
+   sudo mkdir -p /usr/local/nginx/cert &&
+   sudo wget -O /usr/local/nginx/cert/tbstls.pem https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6/cert/tbstls.pem &&
+   sudo wget -O /usr/local/nginx/cert/tbstls.key https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6/cert/tbstls.key; then
+    log "成功添加自动同步。"
+else
+    log "添加自动同步失败。" && exit 1
+fi
+
+
+# 下载并运行 Nezha 安装脚本到指定目录
+log "下载并运行 Nezha 安装脚本..."
+if curl -L https://raw.githubusercontent.com/nezhahq/scripts/main/install.sh -o /root/scripts/nezha.sh && chmod +x /root/scripts/nezha.sh; then
+    # 第一次运行 Nezha 安装脚本
+    /root/scripts/nezha.sh install_agent vps.tbstbs168.com 5555 85b9720cfd13a9b8fa
+    log "第一次运行 Nezha 安装脚本完成。"
+
+    # 第二次运行 Nezha 安装脚本（如果有必要）
+    #/root/scripts/nezha.sh install_agent vps.tbstbs168.com 5555 206891f4dabaca3c96
+    #log "第二次运行 Nezha 安装脚本完成。"
+
+    log "成功安装 Nezha 监控。"
+else
+    log "下载或安装 Nezha 代理失败。" && exit 1
+fi
+
+
+# 获取当前公共 IP 地址并发送到 Telegram
+get_ip_and_notify() {
+    # 获取当前的公共 IP 地址
+    IP_ADDRESS=$(curl -s https://api.ipify.org)
+
+    # 检查 IP 地址是否为空
+    if [ -z "$IP_ADDRESS" ]; then
+        log "无法获取公共 IP 地址，IP 地址为空。"
+        return
+    fi
+
+    # 使用 log 函数记录并发送通知
+    log "当前的最新 DDNS IP 地址是：$IP_ADDRESS"
+}
+
+
+# 下载并运行 DDNS 更新脚本到指定目录
+log "下载并运行 DDNS 脚本..."
+if wget -N -O /root/scripts/DDNSawshk3.sh https://raw.githubusercontent.com/tuboshu66/tbs/master/test/test6/tbs/DDNSawshk3.sh && chmod +x /root/scripts/DDNSawshk3.sh; then
+    /root/scripts/DDNSawshk3.sh
+    log "成功执行 DDNS 脚本。"
+
+    # 获取并通知最新的 IP 地址
+    get_ip_and_notify
+
+    # 添加到 crontab
+    if (crontab -l; echo "*/5 * * * * /root/scripts/DDNSawshk3.sh >> /var/log/ddns.log 2>&1") | crontab -; then
+        log "成功将 DDNS 脚本添加到定时任务。"
+    else
+        log "添加 DDNS 脚本到定时任务失败。" && exit 1
+    fi
+else
+    log "下载或执行 DDNS 脚本失败。" && exit 1
+fi
+
+log "所有任务完成成功。"
